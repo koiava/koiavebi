@@ -1,0 +1,189 @@
+	<link rel="stylesheet" type="text/css" href="./assets/css/styles.css" />
+	<script src="./assets/js/familytree.js"></script>
+	<div style="width:100%; height:100%;" id="tree"></div>
+	<script>
+		let [cx, cy] = [0, 0];
+
+		let plus =
+			`<circle cx="${cx}" cy="${cy}" r="15" fill="#6D8FB2" stroke="#fff" stroke-width="1"></circle>
+			<line x1="-11" y1="0" x2="11" y2="0" stroke-width="1" stroke="#fff"></line>
+			<line x1="0" y1="-11" x2="0" y2="11" stroke-width="1" stroke="#fff"></line>`;
+		let minus =
+			`<circle cx="${cx}" cy="${cy}" r="15" fill="#6D8FB2" stroke="#fff" stroke-width="1"></circle>
+			<line x1="-11" y1="0" x2="11" y2="0" stroke-width="1" stroke="#fff"></line>`;
+
+		FamilyTree.templates.myTemplate = Object.assign({}, FamilyTree.templates.tommy);
+		FamilyTree.templates.myTemplate.size = [250, 100];
+		FamilyTree.templates.myTemplate.defs =
+			`<g transform="matrix(1,0,0,1,-12,-9)" id="plus">${minus}</g><g transform="matrix(1,0,0,1,-12,-9)" id="minus">${minus}</g>`;
+		FamilyTree.templates.myTemplate.node =
+			`<rect x="0" y="0" height="{h}" width="{w}" stroke-width="1" fill="white" stroke="#19447E" rx="7" ry="7"></rect>
+			<circle cx="50" cy="50" fill="#039BE5" r="35" ></circle>`;
+		FamilyTree.templates.myTemplate.link = '<path stroke-linejoin="round" stroke="#6D8FB2" stroke-width="1px" fill="none" d="{edge}" />';
+		FamilyTree.templates.myTemplate.field_0 =
+			'<text ' + FamilyTree.attr.width + ' ="150" style="font-size: 16px;" fill="#19447E" x="165" y="45" text-anchor="middle">{val}</text>';
+		FamilyTree.templates.myTemplate.field_1 =
+			'<text ' + FamilyTree.attr.width + ' ="230" style="font-size: 12px;" fill="#19447E" x="165" y="70" text-anchor="middle">{val}</text>';
+		FamilyTree.templates.myTemplate.img_0 =         
+			`<clipPath id="ulaImg"><circle cx="50" cy="50" r="35" fill="#248CE6" ></circle></clipPath>
+			<image preserveAspectRatio="xMidYMid slice" clip-path="url(#ulaImg)" xlink:href="{val}" x="12" y="10" width="75" height="75"></image>`;
+		FamilyTree.templates.myTemplate.plus = plus;
+		FamilyTree.templates.myTemplate.minus = minus;
+
+		let family = new FamilyTree(document.getElementById("tree"), {
+			orientation: FamilyTree.orientation.left,
+			scaleInitial: FamilyTree.match.boundary,
+			template: "myTemplate",
+			partnerChildrenSplitSeparation: 40,
+			levelSeparation: 80,
+			nodeBinding: {
+				field_0: "name",
+				field_1: "title",
+				img_0: "img"
+			}
+		});
+
+		family.onInit(() => {
+			family.collapse(1, [82, 83, 84, 85, 86, 87, 88, 89, 90, 91]);
+		});
+		
+		family.on('click', function (sender, args) {
+			if (args.node.id == 0) {
+				location.replace("./index.html");
+			}
+			if (args.node.id == 3) {
+				location.replace("./tree_taia.html");
+			}
+			if (args.node.id == 4) {
+				location.replace("./tree_ivane.html");
+			}
+			if (args.node.id == 5) {
+				location.replace("./tree_qaquchia.html");
+			}
+			return false;
+		});
+
+		family.on('render-link', function (sender, args) {
+			if (args.cnode.ppid != undefined) {
+				cx = args.p.xa + 12;
+				cy = args.p.ya + 9;
+				args.html += `<use data-ctrl-ec-id="${args.node.id}" xlink:href="#minus" x="${cx}" y="${cy}"/>`;
+			}
+		});
+
+		family.load([
+			{ id: 0, name: "უკან გასვლა" },
+            { id: 1, name: "--თურები--" },
+            { id: 2, fid: 1, name: "გიგო?" },
+            { id: 3, fid: 1, name: "ტაია" },
+			{ id: 4, fid: 1, name: "ივანე?" },
+			{ id: 5, fid: 1, name: "ქაქუჩია" },
+			{ id: 117, fid: 4, name: "დუტუ?" },
+			{ id: 118, fid: 117, name: "ბასა" },
+			{ id: 119, fid: 117, name: "ანდრია" },
+			{ id: 120, fid: 118, name: "სანდრო" },
+			{ id: 121, fid: 118, name: "სალომე" },
+			{ id: 122, fid: 118, name: "ფარნა" },
+			{ id: 123, fid: 119, name: "პეტრე" },
+			{ id: 124, fid: 119, name: "პავლე" },
+			{ id: 125, fid: 119, name: "ალექსი" },
+			{ id: 126, fid: 122, name: "ვარლამი" },
+			{ id: 127, fid: 122, name: "ევგენი" },
+			{ id: 128, fid: 122, name: "მაკარი" },
+			{ id: 129, fid: 122, name: "სევერიანი" },
+			{ id: 130, fid: 122, name: "ტარასი" },
+			{ id: 131, fid: 122, name: "კონსტანტინე" },
+			{ id: 132, fid: 122, name: "შალვა" },
+			{ id: 133, fid: 122, name: "რაჟდენი" },
+			{ id: 134, fid: 122, name: "აქვსენტი" },
+			{ id: 135, fid: 122, name: "ანტონი" },
+			{ id: 136, fid: 122, name: "დიანოსი" },
+			{ id: 137, fid: 122, name: "ბაგრატი" },
+			{ id: 138, fid: 122, name: "სპირიდონი" },
+			{ id: 139, fid: 126, name: "ოთარი" },
+			{ id: 140, fid: 139, name: "ზურაბი" },
+			{ id: 141, fid: 139, name: "ჯონდო" },
+			{ id: 142, fid: 139, name: "მერაბი" },
+			{ id: 143, fid: 140, name: "ლელა" },
+			{ id: 144, fid: 141, name: "იოვანა" },
+			{ id: 145, fid: 130, name: "ლორა" },
+			{ id: 146, fid: 130, name: "ტოლია" },
+			{ id: 147, fid: 130, name: "ვოვა" },
+			{ id: 148, fid: 145, name: "ნათელა" },
+			{ id: 149, fid: 146, name: "დიმიტრი" },
+			{ id: 150, fid: 132, name: "ნაირა" },
+			{ id: 151, fid: 132, name: "მანანა" },
+			{ id: 152, fid: 133, name: "ჯემალი" },
+			{ id: 153, fid: 133, name: "მერი" },
+			{ id: 154, fid: 152, name: "ჯემალი" },
+			{ id: 155, fid: 134, name: "ფარნაოზი" },
+			{ id: 156, fid: 134, name: "ირინა" },
+			{ id: 157, fid: 135, name: "თამაზი" },
+			{ id: 158, fid: 138, name: "ეთერი" },
+			{ id: 159, fid: 138, name: "ციალა" },
+			{ id: 160, fid: 123, name: "კლიმენტი" },
+			{ id: 161, fid: 123, name: "ჯონდო" },
+			{ id: 162, fid: 123, name: "მიხეილი" },
+			{ id: 163, fid: 123, name: "ცირუ" },
+			{ id: 164, fid: 123, name: "გაიანე" },
+			{ id: 165, fid: 123, name: "მინა" },
+			{ id: 166, fid: 160, name: "ტატიანა" },
+			{ id: 167, fid: 160, name: "პეტრე" },
+			{ id: 168, fid: 160, name: "ბორისი" },
+			{ id: 169, fid: 160, name: "ჯემალი" },
+			{ id: 170, fid: 161, name: "მერი" },
+			{ id: 171, fid: 162, name: "ციალა" },
+			{ id: 172, fid: 162, name: "ლერი" },
+			{ id: 173, fid: 172, name: "ლიზიკო" },
+			{ id: 174, fid: 172, name: "ნათია" },
+			{ id: 175, fid: 172, name: "ანი" },
+			{ id: 176, fid: 167, name: "მამუკა" },
+			{ id: 177, fid: 167, name: "კახაბერი" },
+			{ id: 178, fid: 176, name: "მარიამი" },
+			{ id: 179, fid: 176, name: "ლუკა" },
+			{ id: 180, fid: 177, name: "ნიკოლოზი" },
+			{ id: 181, fid: 177, name: "ნინი" },
+			{ id: 182, fid: 168, name: "ლალი" },
+			{ id: 183, fid: 168, name: "ხათუნა" },
+			{ id: 184, fid: 169, name: "რუსუდანი" },
+			{ id: 185, fid: 169, name: "ლევანი" },
+			{ id: 186, fid: 185, name: "---" },
+			{ id: 187, fid: 185, name: "---" },
+			{ id: 188, fid: 125, name: "ალექსი/ბონდო", pids: [219], img: "images/aleksandre_3.jpg" },
+			{ id: 189, fid: 125, name: "სიმონი" },
+			{ id: 190, fid: 125, name: "მირიანი" },
+			{ id: 191, fid: 125, name: "ზინა" },
+			{ id: 192, fid: 125, name: "თათუშა" },
+			{ id: 193, fid: 125, name: "ვენერა" },
+			{ id: 194, fid: 188, name: "თამაზი", img: "images/tamazi.jpg" },
+			{ id: 195, fid: 188, name: "მერაბი", pids: [213], img: "images/merabi_2.jpg" },
+			{ id: 196, name: "ნატო", pids: [221], fid: 188 },
+			{ id: 197, fid: 194, name: "გიგი", pids: [217],  img: "images/gigi.jpg" },
+			{ id: 198, fid: 194, name: "სოსო", img: "images/soso.jpg" },
+			{ id: 199, name: "ალექსანდრე", pids: [220], fid: 195, mid: 213, img: "images/aleksandre.jpg" },
+			{ id: 200, name: "ნინო", fid: 195, mid: 213, pids: [212], img: "images/nino_2.jpg" },
+			{ id: 201, name: "ელენე", pids: [216], fid: 197, mid: 217, img: "images/elene_2.jpg" },
+			{ id: 202, name: "ლიზა", fid: 197, mid: 217, img: "images/liza.jpg" },
+			{ id: 203, fid: 199, mid: 220, name: "ტატიანა", img: "images/tatiana.jpg" },
+			{ id: 204, fid: 199, mid: 220, name: "დავითი", pids: [214], img: "images/datuna.jpg" },
+			{ id: 205, fid: 190, name: "თენგიზი" },
+			{ id: 206, fid: 190, name: "ალექსი" },
+			{ id: 207, fid: 205, name: "მირიანი(ბაჩი)" },
+			{ id: 208, fid: 205, name: "გოგა" },
+			{ id: 209, fid: 206, name: "ვახტანგი" },
+			{ id: 210, fid: 124, name: "კუკური" },
+			{ id: 211, name: "ქეთევან გოცირიძე", mid: 200, fid: 212, img: "images/ketevan_gotsiridze.jpg" },
+			{ id: 212, pids: [200], name: "ბესო გოცირიძე", img: "images/beso_gotsiridze.jpg" },
+			{ id: 213, pids: [195], name: "ნუნუ გეგეშიძე", img: "images/nunu_gegeshidze.jpg" },
+			{ id: 214, pids: [204], name: "სალომე თავბერიძე", img: "images/salome_tavberidze.jpg" },
+			{ id: 215, name: "ალექსანდრე", fid: 204, mid: 214,  img: "images/aleksandre_2.jpg" },
+			{ id: 216, name: "ნიკოლოზ არჩვაძე", pids: [201],  img: "images/nikoloz_archvadze.jpg" },
+			{ id: 217, name: "ნინო კობაიძე", pids: [197],  img: "images/nino_kobaidze.jpg" },
+			{ id: 218, name: "ნატალი", fid: 197, mid: 217, img: "images/natali.jpg" },
+			{ id: 219, name: "ოლღა ჩერქეზიშვილი", pids: [188],  img: "images/olga_cherkezishvili.jpg" },
+			{ id: 220, name: "ნინო ჯუღელი", pids: [199], img: "images/nino_jugeli.jpg" },
+			{ id: 221, name: "თემური დევიძე", pids: [196] },
+			{ id: 222, name: "გია დევიძე", fid: 221, mid: 196 },
+        ]);
+    </script>
+
