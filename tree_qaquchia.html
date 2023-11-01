@@ -1,0 +1,174 @@
+	<link rel="stylesheet" type="text/css" href="./assets/css/styles.css" />
+	<script src="./assets/js/familytree.js"></script>
+	<div style="width:100%; height:100%;" id="tree"></div>
+	<script>
+		let [cx, cy] = [0, 0];
+
+		let plus =
+			`<circle cx="${cx}" cy="${cy}" r="15" fill="#6D8FB2" stroke="#fff" stroke-width="1"></circle>
+			<line x1="-11" y1="0" x2="11" y2="0" stroke-width="1" stroke="#fff"></line>
+			<line x1="0" y1="-11" x2="0" y2="11" stroke-width="1" stroke="#fff"></line>`;
+		let minus =
+			`<circle cx="${cx}" cy="${cy}" r="15" fill="#6D8FB2" stroke="#fff" stroke-width="1"></circle>
+			<line x1="-11" y1="0" x2="11" y2="0" stroke-width="1" stroke="#fff"></line>`;
+
+		FamilyTree.templates.myTemplate = Object.assign({}, FamilyTree.templates.tommy);
+		FamilyTree.templates.myTemplate.size = [250, 100];
+		FamilyTree.templates.myTemplate.defs =
+			`<g transform="matrix(1,0,0,1,-12,-9)" id="plus">${minus}</g><g transform="matrix(1,0,0,1,-12,-9)" id="minus">${minus}</g>`;
+		FamilyTree.templates.myTemplate.node =
+			`<rect x="0" y="0" height="{h}" width="{w}" stroke-width="1" fill="white" stroke="#19447E" rx="7" ry="7"></rect>
+			<circle cx="50" cy="50" fill="#039BE5" r="35" ></circle>`;
+		FamilyTree.templates.myTemplate.link = '<path stroke-linejoin="round" stroke="#6D8FB2" stroke-width="1px" fill="none" d="{edge}" />';
+		FamilyTree.templates.myTemplate.field_0 =
+			'<text ' + FamilyTree.attr.width + ' ="150" style="font-size: 16px;" fill="#19447E" x="165" y="45" text-anchor="middle">{val}</text>';
+		FamilyTree.templates.myTemplate.field_1 =
+			'<text ' + FamilyTree.attr.width + ' ="230" style="font-size: 12px;" fill="#19447E" x="165" y="70" text-anchor="middle">{val}</text>';
+		FamilyTree.templates.myTemplate.img_0 =         
+			`<clipPath id="ulaImg"><circle cx="50" cy="50" r="35" fill="#248CE6" ></circle></clipPath>
+			<image preserveAspectRatio="xMidYMid slice" clip-path="url(#ulaImg)" xlink:href="{val}" x="12" y="10" width="75" height="75"></image>`;
+		FamilyTree.templates.myTemplate.plus = plus;
+		FamilyTree.templates.myTemplate.minus = minus;
+
+		let family = new FamilyTree(document.getElementById("tree"), {
+			orientation: FamilyTree.orientation.left,
+			scaleInitial: FamilyTree.match.boundary,
+			template: "myTemplate",
+			partnerChildrenSplitSeparation: 40,
+			levelSeparation: 80,
+			nodeBinding: {
+				field_0: "name",
+				field_1: "title",
+				img_0: "img"
+			}
+		});
+
+		family.onInit(() => {
+			family.collapse(1, [82, 83, 84, 85, 86, 87, 88, 89, 90, 91]);
+		});
+		
+		family.on('click', function (sender, args) {
+			if (args.node.id == 0) {
+				location.replace("./index.html");
+			}
+			if (args.node.id == 3) {
+				location.replace("./tree_taia.html");
+			}
+			if (args.node.id == 4) {
+				location.replace("./tree_ivane.html");
+			}
+			if (args.node.id == 5) {
+				location.replace("./tree_qaquchia.html");
+			}
+			return false;
+		});
+
+		family.on('render-link', function (sender, args) {
+			if (args.cnode.ppid != undefined) {
+				cx = args.p.xa + 12;
+				cy = args.p.ya + 9;
+				args.html += `<use data-ctrl-ec-id="${args.node.id}" xlink:href="#minus" x="${cx}" y="${cy}"/>`;
+			}
+		});
+
+		family.load([
+			{ id: 0, name: "უკან გასვლა" },
+			{ id: 1, name: "--თურები--" },
+			{ id: 2, name: "გიგო?", fid: 1 },
+			{ id: 3, name: "ტაია", fid: 1 },
+			{ id: 4, name: "ივანე?", fid: 1 },
+			{ id: 5, name: "ქაქუჩია", fid: 1 },
+			{ id: 6, name: "მახა", fid: 5 },
+			{ id: 7, name: "გოჯოგია", fid: 5 },
+			{ id: 8, name: "მამუკა", fid: 5 },
+			{ id: 9, name: "ოსიე", fid: 5 },
+			{ id: 10, name: "გიტა", fid: 5 },
+			{ id: 11, name: "ნინო", pids: [14], fid: 6 },
+			{ id: 12, name: "კაცია", fid: 6 },
+			{ id: 13, name: "ანდრია", fid: 7 },
+			{ id: 14, name: "--- გეგენავა", pids: [11] },
+			{ id: 15, name: "სუმო", fid: 8 },
+			{ id: 16, name: "ივანე", fid: 9 },
+			{ id: 17, name: "ფილიპე", fid: 10 },
+			{ id: 18, name: "ისიდორე", fid: 12 },
+			{ id: 19, name: "სარდიონი", fid: 12 },
+			{ id: 20, name: "ქრისტინე", pids: [21], fid: 12 },
+			{ id: 21, name: "--- პატარაია", pids: [20] },
+			{ id: 22, name: "ნიკოლოზი", fid: 12 },
+			{ id: 23, name: "ირინა", pids: [24], fid: 12 },
+			{ id: 24, name: "--- შაბურიშვილი", pids: [23] },
+			{ id: 25, name: "ლავრენტი", fid: 13 },
+			{ id: 26, name: "ნესტორი", fid: 15 },
+			{ id: 27, name: "გრიგოლი", fid: 15 },
+			{ id: 28, name: "გიორგი", fid: 16 },
+			{ id: 29, name: "ალექსი", fid: 17 },
+			{ id: 30, name: "მაშიკო", fid: 17 },
+			{ id: 31, name: "სალომე", fid: 17 },
+			{ id: 32, name: "ნინო", fid: 17 },
+			{ id: 33, name: "ანიკო", fid: 17 },
+			{ id: 34, name: "პეტრე", fid: 22 },
+			{ id: 35, name: "მარია", pids: [40], fid: 22 },
+			{ id: 36, name: "რომანოზი", fid: 22 },
+			{ id: 37, name: "საშა", pids: [41], fid: 22 },
+			{ id: 38, name: "ანა", pids: [42], fid: 22 },
+			{ id: 39, name: "ვასილი", fid: 22 },
+			{ id: 40, name: "--- კიკაბიძე", pids: [35] },
+			{ id: 41, name: "--- ჭოჭუა", pids: [37] },
+			{ id: 42, name: "--- კუპრაძე", pids: [38] },
+			{ id: 43, name: "ალიოშა", title: "დაიკარგა", fid: 25 },
+			{ id: 44, name: "შოთა", fid: 25 },
+			{ id: 45, name: "ტოჩი", fid: 25 },
+			{ id: 46, name: "ლილი", fid: 25 },
+			{ id: 47, name: "მარგალიტა", fid: 27 },
+			{ id: 48, name: "ბაბი", pids: [50], fid: 28 },
+			{ id: 49, name: "ალექსანდრე", fid: 28 },
+			{ id: 50, name: "--- კილასონია", pids: [48] },
+			{ id: 51, name: "თათუშა", pids: [54], fid: 29 },
+			{ id: 52, name: "ივლიანე", fid: 29 },
+			{ id: 53, name: "იროდი", pids: [95], fid: 29 },
+			{ id: 54, name: "--- სალაყაია", pids: [51] },
+			{ id: 55, name: "ვლადიმერ/ხუტა", fid: 30 },
+			{ id: 56, name: "ვარლამი", fid: 36 },
+			{ id: 57, name: "ნიკოლოზი", fid: 36 },
+			{ id: 58, name: "რაული", fid: 44 },
+			{ id: 59, name: "მარინა", fid: 45 },
+			{ id: 60, name: "ნონა", fid: 45 },
+			{ id: 61, name: "დემური", fid: 45 },
+			{ id: 62, name: "მედიკო", fid: 52 },
+			{ id: 63, name: "მირდასი", pids: [80], fid: 53, mid: 95, img: "images/mirdasi.jpg" },
+			{ id: 64, name: "მაყვალა", pids: [66], fid: 53, mid: 95 },
+			{ id: 65, name: "მევლუდი", fid: 53, mid: 95 },
+			{ id: 66, name: "ნოდარი გოგოხია", pids: [64] },
+			{ id: 67, name: "ლია", fid: 56 },
+			{ id: 68, name: "ნათელა", fid: 56 },
+			{ id: 69, name: "ავთანდილი", fid: 56 },
+			{ id: 70, name: "ვლადიმერი/ვალერი", fid: 57 },
+			{ id: 71, name: "ქეთინო", pids: [79], fid: 63, mid: 80, img: "images/ketino.jpg" },
+			{ id: 72, name: "ნანა", pids: [92], fid: 63, mid: 80, img: "images/nana_2.jpg"  },
+			{ id: 73, name: "ციცო", fid: 65 },
+			{ id: 74, name: "მალხაზი", fid: 65 },
+			{ id: 75, name: "თინათინი", fid: 69, title: "სტომატოლოგი", img: "images/tinatini.jpg" },
+			{ id: 76, name: "ნიკოლოზი", fid: 69, title: "ბიზნეს ადმინისტრირება", img: "images/nika.jpg" },
+			{ id: 77, name: "ეკატერინე", fid: 70 },
+			{ id: 78, name: "ელმირა", fid: 70 },
+			{ id: 79, name: "ანატოლი გრიგოლია", pids: [71], img: "images/anatoli_grigolia.jpg" },
+			{ id: 80, name: "ზაირა მიქაძე", pids: [63], img: "images/zaira.jpg" },
+			{ id: 81, name: "ალექსანდრე", fid: 76, img: "images/aleksandre_4.jpg" },
+			{ id: 82, name: "სალომე ბარათაშვილი", mid: 72, fid: 92, img: "images/salome_baratashvili.jpg" },
+			{ id: 83, name: "კოკო ბარათაშვილი", mid: 72, fid: 92, img: "images/koko_baratashvili.jpg" },
+			{ id: 84, name: "კოსტა გეგენავა", mid: 11, fid: 14 },
+			{ id: 85, name: "ისიდორე გეგენავა", mid: 11, fid: 14 },
+			{ id: 86, name: "გიორგი პატარაია", mid: 20, fid: 21 },
+			{ id: 87, name: "მინა პატარაია", mid: 20, fid: 21 },
+			{ id: 88, name: "სპირიდონი პატარაია", mid: 20, fid: 21 },
+			{ id: 89, name: "იონა პატარაია", mid: 20, fid: 21 },
+			{ id: 90, name: "თენგიზი გოგოხია", mid: 64, fid: 66, img: "images/tengizi_gogokhia.jpg" },
+			{ id: 91, name: "ნონა გოგოხია", mid: 64, fid: 66 },
+			{ id: 92, name: "შოთა ბარათაშვილი", pids: [72], img: "images/shota_baratashvili.jpg" },
+			{ id: 93, name: "ლევანი", fid: 74 },
+			{ id: 94, name: "ლანა", fid: 74 },
+			{ id: 95, name: "ლიზა ჯიბლაძე", pids: [53] },
+			{ id: 96, name: "იოანე", mid: 75, img: "images/ioane_2.jpg" },
+		]);
+    </script>
+
