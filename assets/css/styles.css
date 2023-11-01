@@ -9,15 +9,6 @@ html, body {
   font-family: Helvetica;
 }
 
-/* Header/Logo Title */
-.header {
-  padding: 60px;
-  text-align: center;
-  background: #248CE6;
-  color: white;
-  font-size: 30px;
-}
-
 #tree {
   width:100%;
   height:100%;
