@@ -882,7 +882,7 @@ function setupZoomPan(nodes, s, tx, ty) {
     });
 	
 	container.addEventListener('touchend', function (e) {
-		if (e.touches.length === 1) {
+		if (e.touches.length === 0) {
 			endMoving(e);
 			console.log("moving end");
 		}
