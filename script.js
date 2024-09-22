@@ -917,7 +917,7 @@ function setupZoomPan(nodes, s, tx, ty) {
 			const zoomFactor = zoomNewtDist / zoomStartDist;
 			const zoomX = (touch0.clientX + touch1.clientX) / 2;
 			const zoomY = (touch0.clientY + touch1.clientY) / 2;
-			const newScale = zoomFactor * scale;
+			const newScale = zoomFactor * startScale;
 			
 			console.log(`zoom: ${newScale}`);
 			handleZoom(zoomX, zoomY, newScale);
