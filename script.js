@@ -779,6 +779,7 @@ function setupZoomPan(nodes, s, tx, ty) {
     let isPanning = false;
     let startX, startY;
 	let zoomStartDist;
+	let startScale;
 	
 	updateTransform();
 	
@@ -839,12 +840,11 @@ function setupZoomPan(nodes, s, tx, ty) {
         container.style.cursor = 'grab';
 	}
 	
-	function handleZoom(x, y, scaleDelta) {
+	function handleZoom(x, y, newScale) {
 		const rect = container.getBoundingClientRect();
         const offsetX = x - rect.left;
         const offsetY = y - rect.top;
 	
-        const newScale = Math.min(Math.max(0.01, scale * scaleDelta), 4);
         const scaleRatio = newScale / scale;
 
         translateX = offsetX - scaleRatio * (offsetX - translateX);
@@ -863,6 +863,7 @@ function setupZoomPan(nodes, s, tx, ty) {
 			const vecX = touch0.clientX - touch1.clientX;
 			const vecY = touch0.clientY - touch1.clientY;
 			zoomStartDist = Math.sqrt(vecX * vecX + vecY * vecY);
+			startScale = scale;
 		}
     });
 
@@ -893,7 +894,8 @@ function setupZoomPan(nodes, s, tx, ty) {
 		
 		const zoomSpeed = 0.05;
         const delta = 1.0 - e.deltaY * 0.001;//e.deltaY > 0 ? 1.0 - zoomSpeed : 1.0 + zoomSpeed;
-		handleZoom(e.clientX, e.clientY, delta);
+        const newScale = Math.min(Math.max(0.01, scale * delta), 4);
+		handleZoom(e.clientX, e.clientY, newScale);
 
         updateTransform();
 		drawConnections(nodes);
@@ -915,9 +917,10 @@ function setupZoomPan(nodes, s, tx, ty) {
 			const zoomFactor = zoomNewtDist / zoomStartDist;
 			const zoomX = (touch0.clientX + touch1.clientX) / 2;
 			const zoomY = (touch0.clientY + touch1.clientY) / 2;
+			const newScale = zoomFactor * scale;
 			
-			console.log(`zoom: ${zoomFactor}`);
-			handleZoom(zoomX, zoomY, zoomFactor);
+			console.log(`zoom: ${newScale}`);
+			handleZoom(zoomX, zoomY, newScale);
 		}
 		
         updateTransform();
