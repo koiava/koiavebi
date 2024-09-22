@@ -778,6 +778,7 @@ function setupZoomPan(nodes, s, tx, ty) {
 
     let isPanning = false;
     let startX, startY;
+	let zoomStartDist;
 	
 	updateTransform();
 	
@@ -819,53 +820,108 @@ function setupZoomPan(nodes, s, tx, ty) {
     container.style.overflow = 'hidden';
 	tree.style.transformOrigin = 'top left';
     svg.style.transformOrigin = 'top left';
-
-    container.addEventListener('mousedown', function (e) {
-        isPanning = true;
+	
+	function startMoving(e) {
+		isPanning = true;
         container.style.cursor = 'grabbing';
         startX = e.clientX - translateX;
         startY = e.clientY - translateY;
-		//console.log("Mouse down");
-    });
-
-    container.addEventListener('mousemove', function (e) {
-        if (!isPanning) return;
+	}
+	
+	function handleMoving(e) {
+		if (!isPanning) return;
         translateX = e.clientX - startX;
         translateY = e.clientY - startY;
-        updateTransform();
-		drawConnections(nodes); // Synchronize connections
-		createTimeLabels(nodes);
-		//console.log("Mouse move");
-    });
-
-    container.addEventListener('mouseup', function () {
-        isPanning = false;
-        container.style.cursor = 'grab';
-		//console.log("Mouse up");
-    });
-
-    container.addEventListener('wheel', function (e) {
-        e.preventDefault();
-        const rect = container.getBoundingClientRect();
-        const offsetX = e.clientX - rect.left;
-        const offsetY = e.clientY - rect.top;
+	}
 	
-		const zoomSpeed = 0.05;
-        const delta = e.deltaY > 0 ? 1.0 - zoomSpeed : 1.0 + zoomSpeed;
-        const newScale = Math.min(Math.max(0.01, scale * delta), 4);
+	function endMoving(e) {
+		isPanning = false;
+        container.style.cursor = 'grab';
+	}
+	
+	function handleZoom(x, y, scaleDelta) {
+		const rect = container.getBoundingClientRect();
+        const offsetX = x - rect.left;
+        const offsetY = y - rect.top;
+	
+        const newScale = Math.min(Math.max(0.01, scale * scaleDelta), 4);
         const scaleRatio = newScale / scale;
 
         translateX = offsetX - scaleRatio * (offsetX - translateX);
         translateY = offsetY - scaleRatio * (offsetY - translateY);
 
         scale = newScale;
+	}
+	
+	container.addEventListener('touchstart', function (e) {
+		if (e.touches.length === 1) {
+			startMoving(e);
+		} else if (e.touches.length === 2) { // Double-tap for zooming
+			const touch0 = e.touches[0];
+			const touch1 = e.touches[1];
+			const vecX = touch0.clientX - touch1.clientX;
+			const vecY = touch0.clientY - touch1.clientY;
+			zoomStartDist = Math.sqrt(vecX * vecX + vecY * vecY);
+		}
         
-		//console.log(`s: ${scale}, x: ${translateX}, y: ${translateY}`);
+    });
+
+    container.addEventListener('mousedown', function (e) {
+		startMoving(e);
+    });
+
+    container.addEventListener('mousemove', function (e) {
+        handleMoving(e);
+        updateTransform();
+		drawConnections(nodes); // Synchronize connections
+		createTimeLabels(nodes);
+    });
+	
+    container.addEventListener('mouseup', function (e) {
+        endMoving(e);
+    });
+	
+	container.addEventListener('touchend', function (e) {
+		if (e.touches.length === 1) {
+			endMoving(e);
+		}
+    });
+
+    container.addEventListener('wheel', function (e) {
+        e.preventDefault();
+		
+		const zoomSpeed = 0.05;
+        const delta = 1.0 - e.deltaY * 0.001;//e.deltaY > 0 ? 1.0 - zoomSpeed : 1.0 + zoomSpeed;
+		handleZoom(e.clientX, e.clientY, delta);
+
         updateTransform();
 		drawConnections(nodes);
 		createTimeLabels(nodes);
 		//console.log("Mouse wheel");
     });
+	
+	container.addEventListener('touchmove', function (e) {
+        if (e.touches.length === 1) {
+			handleMoving(e);
+		} else if(e.touches.length === 2) {
+			const touch0 = e.touches[0];
+			const touch1 = e.touches[1];
+			
+			const vecX = touch0.clientX - touch1.clientX;
+			const vecY = touch0.clientY - touch1.clientY;
+			zoomNewtDist = Math.sqrt(vecX * vecX + vecY * vecY);
+			const zoomFactor = zoomNewtDist / zoomStartDist;
+			const zoomX = (touch0.clientX + touch1.clientX) / 2;
+			const zoomY = (touch0.clientY + touch1.clientY) / 2;
+			
+			console.log(`zoom: ${zoomFactor}`);
+			handleZoom(zoomX, zoomY, zoomFactor);
+		}
+		
+        updateTransform();
+		drawConnections(nodes); // Synchronize connections
+		createTimeLabels(nodes);
+	});
 
     function updateTransform() {
         const transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
