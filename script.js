@@ -835,7 +835,7 @@ function setupZoomPan(nodes, s, tx, ty) {
         translateY = e.clientY - startY;
 	}
 	
-	function endMoving(e) {
+	function endMoving() {
 		isPanning = false;
         container.style.cursor = 'grab';
 	}
@@ -856,7 +856,7 @@ function setupZoomPan(nodes, s, tx, ty) {
 	container.addEventListener('touchstart', function (e) {
 		e.preventDefault();
 		if (e.touches.length === 1) {
-			startMoving(e);
+			startMoving(e.touches[0]);
 			console.log("moving start");
 		} else if (e.touches.length === 2) { // Double-tap for zooming
 			const touch0 = e.touches[0];
@@ -880,13 +880,13 @@ function setupZoomPan(nodes, s, tx, ty) {
     });
 	
     container.addEventListener('mouseup', function (e) {
-        endMoving(e);
+        endMoving();
     });
 	
 	container.addEventListener('touchend', function (e) {
 		e.preventDefault();
 		if (e.touches.length === 0) {
-			endMoving(e);
+			endMoving();
 			console.log("moving end");
 		}
     });
@@ -908,7 +908,7 @@ function setupZoomPan(nodes, s, tx, ty) {
 	container.addEventListener('touchmove', function (e) {
 		e.preventDefault();
         if (e.touches.length === 1) {
-			handleMoving(e);
+			handleMoving(e.touches[0]);
 			console.log("moving");
 		} else if(e.touches.length === 2) {
 			const touch0 = e.touches[0];
