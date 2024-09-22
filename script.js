@@ -907,10 +907,11 @@ function setupZoomPan(nodes, s, tx, ty) {
 	
 	container.addEventListener('touchmove', function (e) {
 		e.preventDefault();
-        if (e.touches.length === 1) {
+        if (e.touches.length === 1 && isPanning) {
 			handleMoving(e.touches[0]);
 			console.log("moving");
 		} else if(e.touches.length === 2) {
+			isPanning = false;
 			const touch0 = e.touches[0];
 			const touch1 = e.touches[1];
 			
