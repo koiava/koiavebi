@@ -1,0 +1,116 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    overflow: hidden; /* Prevent scroll bars */
+}
+
+.tree-container {
+    position: relative;
+    padding: 0px;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    cursor: grab;
+	overflow: hidden; /* Ensure no overflow */
+}
+
+.tree {
+    display: flex;
+	flex-direction: row; /* Horizontal layout */
+    justify-content: flex-start;
+    align-items: flex-start;
+    position: relative;
+    padding: 20px;
+	/*transform-origin: top left;*/
+}
+
+.children {
+    display: flex; /* Align children horizontally */
+	flex-direction: column; /* Horizontal layout */
+	justify-content: flex-start; /* Align children within the parent */
+    margin-left: 0px;
+    /*margin-left: 50px;*/
+}
+
+.node {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin: 0px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    width: 150px;
+	height: 200px;
+    align-items: center;
+	box-sizing: border-box;
+	justify-content: space-between;
+}
+
+.node img {
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+
+.info {
+	flex: 1; /* Allow the content to stretch */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically */
+    align-items: center;
+    text-align: center;
+    font-size: 12px;
+}
+
+.node .node-footer {
+    width: 100%; /* Full width for alignment */
+    display: flex;
+    justify-content: space-between; /* Positions content at edges */
+    position: absolute;
+    bottom: 10px; /* Position at the bottom of the node */
+    left: 0;
+    padding: 0 10px; /* Matches node padding */
+    box-sizing: border-box;
+    font-size: 12px;
+}
+
+.node .birth, .node .death {
+    font-size: 12px;
+    color: #666;
+}
+
+.connections {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+	pointer-events: none; /* Ensure no interference with user interactions */
+    z-index: 1;
+}
+
+.timeline {
+    position: fixed; /* Keep it fixed to the right side */
+    top: 0;          /* Start from the top */
+    right: 0;        /* Align to the right */
+    width: 45px;    /* Set a width for the vertical timeline */
+    height: 100vh;   /* Full height of the viewport */
+    overflow: hidden; /* Disable vertical scrolling */
+    background-color: white; /* Optional: Background color for visibility */
+    border-left: 1px solid #666; /* Vertical separator */
+    z-index: 10; /* Ensure it's visually above other elements */
+    display: flex;
+    flex-direction: column; /* Arrange labels vertically */
+    justify-content: flex-start; /* Align items to the top */
+}
+
+
+.timeline div {
+    margin: 10px 0; /* Spacing between time labels */
+    font-size: 12px; /* Font size */
+    color: #666; /* Text color */
+}
+
