@@ -854,6 +854,7 @@ function setupZoomPan(nodes, s, tx, ty) {
 	}
 	
 	container.addEventListener('touchstart', function (e) {
+		e.preventDefault();
 		if (e.touches.length === 1) {
 			startMoving(e);
 			console.log("moving start");
@@ -883,6 +884,7 @@ function setupZoomPan(nodes, s, tx, ty) {
     });
 	
 	container.addEventListener('touchend', function (e) {
+		e.preventDefault();
 		if (e.touches.length === 0) {
 			endMoving(e);
 			console.log("moving end");
@@ -904,6 +906,7 @@ function setupZoomPan(nodes, s, tx, ty) {
     });
 	
 	container.addEventListener('touchmove', function (e) {
+		e.preventDefault();
         if (e.touches.length === 1) {
 			handleMoving(e);
 			console.log("moving");
