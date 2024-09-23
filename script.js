@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 158, name: "ნონა კიკაჩეიშვილი", birth: 1977, mid: 97, fid: 126, image: "nona_kikacheishvili.jpg" },
 		{ id: 159, name: "აკაკი შარაშენიძე", birth: 1983, mid: 96, fid: 125, image: "akaki_sharashenidze.jpg" },
 		{ id: 160, name: "გოგა შარაშენიძე", birth: 1987, mid: 96, fid: 125, image: "goga_sharashenidze.jpg" },
-		{ id: 161, name: "იაგო ჭანტურია", birth: 1950, mid: 23, fid: 211, profession: "ბუღალტერი" ,image: "iago_chanturia.jpg" },
+		{ id: 161, name: "იაგო ჭანტურია", birth: 1951, mid: 23, fid: 211, profession: "ბუღალტერი" ,image: "iago_chanturia.jpg" },
 		{ id: 162, name: "სოსო ჭანტურია", birth: 1948, mid: 23, fid: 211, profession: "Taxi" },
 		{ id: 163, name: "გოგი ფანცულაია", mid: 90, fid: 123, image: "gogi_pantsulaia.jpg" },
 		{ id: 164, name: "ზურაბი ფანცულაია", mid: 90, fid: 123 },
