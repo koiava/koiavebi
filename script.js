@@ -875,6 +875,11 @@ function setupZoomPan(nodes, s, tx, ty) {
     });
 
     container.addEventListener('mousemove', function (e) {
+		var flags = e.buttons !== undefined ? e.buttons : e.which;
+		const leftButtonDown = (flags & 1) === 1;
+		if(!leftButtonDown){
+			endMoving();
+		}
         handleMoving(e);
         updateTransform();
 		drawConnections(nodes); // Synchronize connections
