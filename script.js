@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 1022, name: "ნიკოლოზი", birth: 1853, death: '1???', fid: 1012 },
 		{ id: 1023, name: "ირინა", death: '1???', pid: 1024, fid: 1012 },
 		{ id: 1024, name: "--- შაბურიშვილი", death: '1???' },
-		{ id: 1025, name: "ლავრენტი", fid: 1013 },
+		{ id: 1025, name: "ლავრენტი", death: '1???', fid: 1013 },
 		{ id: 1026, name: "ნესტორი", fid: 1015 },
 		{ id: 1027, name: "გრიგოლი", fid: 1015 },
 		{ id: 1028, name: "გრიგოლი", fid: 1016 },
@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 1041, name: "--- ჭოჭუა" },
 		{ id: 1042, name: "--- კუპრაძე" },
 		{ id: 1043, name: "ალიოშა", title: "დაიკარგა", fid: 1025 },
-		{ id: 1044, name: "შოთა", fid: 1025 },
+		{ id: 1044, name: "შოთა", birth: 1922, fid: 1025, pid: 1097 }, //https://srbo.archive.gov.ge/uploads/90/3953/79.pdf
 		{ id: 1045, name: "ტოჩი", fid: 1025 },
 		{ id: 1046, name: "ლილი", fid: 1025 },
 		{ id: 1047, name: "მარგალიტა", fid: 1027 },
@@ -424,6 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 1094, name: "ლანა", fid: 1074 },
 		{ id: 1095, name: "ლიზა ჯიბლაძე", death: '19??' },
 		{ id: 1096, name: "იოანე", mid: 1075, image: "ioane_2.jpg" },
+		{ id: 1097, name: "თინა", birth: 1930 },
 		
 		
 		{ id: 2000, name: "ოთარი", death: '1???', fid: 2 },
