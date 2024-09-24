@@ -3,26 +3,26 @@ document.addEventListener('DOMContentLoaded', () => {
 	/*
         { id: 500, name: "დანიელი(თემურაზი)", death: '1???' },
 		{ id: 501, name: "მიხეილი", death: '1???', fid: 500 },
-        { id: 502, name: "რომანი", pids: [519], fid: 501 },
-		{ id: 503, name: "ზურაბი", birth: 1958, pids: [518], fid: 502, mid: 519, image: "zurabi_2.jpg" },
-		{ id: 504, name: "ზაზა", fb: "zaza.koiava", birth: 1983, pids: [506], fid: 503, mid: 518, image: "zaza.jpg" },
-		{ id: 505, name: "ნათია", fb: "natia.koiava.9", pids: [509], fid: 503, mid: 518, image: "natia_2.jpg" },
-		{ id: 506, name: "თამარ ჯოლოხავა", pids: [504], image: "tamar_jolokhava.jpg" },
+        { id: 502, name: "რომანი", pid: 519, fid: 501 },
+		{ id: 503, name: "ზურაბი", birth: 1958, pid: 518, fid: 502, mid: 519, image: "zurabi_2.jpg" },
+		{ id: 504, name: "ზაზა", fb: "zaza.koiava", birth: 1983, pid: 506, fid: 503, mid: 518, image: "zaza.jpg" },
+		{ id: 505, name: "ნათია", fb: "natia.koiava.9", pid: 509, fid: 503, mid: 518, image: "natia_2.jpg" },
+		{ id: 506, name: "თამარ ჯოლოხავა", pid: 504, image: "tamar_jolokhava.jpg" },
 		{ id: 507, name: "თეკლა", mid: 506, fid: 504, image: "tekla.jpg" },
 		{ id: 508, name: "დავითი", mid: 506, fid: 504, image: "daviti_2.jpg" },
-		{ id: 509, name: "რატი ჯიქია", pids: [505], image: "rati_jikia.jpg" },
-		{ id: 510, name: "ფიქრია", pids: [512], fid: 503, mid: 518, image: "pikria.jpg" },
+		{ id: 509, name: "რატი ჯიქია", pid: 505, image: "rati_jikia.jpg" },
+		{ id: 510, name: "ფიქრია", pid: 512, fid: 503, mid: 518, image: "pikria.jpg" },
 		{ id: 511, name: "ლილე ჯიქია", fid: 509, mid: 505, image: "lile_jikia.jpg" },
-		{ id: 512, name: "რეზი კაპანაძე", pids: [510], image: "rezi_kapanadze.jpg" },
-		{ id: 513, name: "თემური", pids: [517], fid:502, mid: 519 },
+		{ id: 512, name: "რეზი კაპანაძე", pid: 510, image: "rezi_kapanadze.jpg" },
+		{ id: 513, name: "თემური", pid: 517, fid:502, mid: 519 },
 		{ id: 514, name: "მიხეილი", birth: 1980, fid:513, mid: 517, image: "mikheili.jpg" },
 		{ id: 515, name: "ხატია", birth: '19??', fb: "xatia.qoiava", fid:513, mid: 517, image: "khatia.jpg" },
-		{ id: 516, name: "ნინო", birth: 1992, fb: "nini.koiava", pids: [521], fid:513, mid: 517, image: "nini.jpg" },
-		{ id: 517, name: "რუსიკო ანთიძე", pids: [513] },
-		{ id: 518, name: "ლია ბიწაძე", pids: [503], image: "lia_bitsadze.jpg" },
-		{ id: 519, name: "ციცო", pids: [502], image: "tsitso___.jpg" },
+		{ id: 516, name: "ნინო", birth: 1992, fb: "nini.koiava", pid: 521, fid:513, mid: 517, image: "nini.jpg" },
+		{ id: 517, name: "რუსიკო ანთიძე", pid: 513 },
+		{ id: 518, name: "ლია ბიწაძე", pid: 503, image: "lia_bitsadze.jpg" },
+		{ id: 519, name: "ციცო", pid: 502, image: "tsitso___.jpg" },
 		{ id: 520, name: "ლუკა კერესელიძე", mid: 516, image: "luka_kereselidze.jpg" },
-		{ id: 521, name: "ნიკოლოზ კერესელიძე", pids: [516] },
+		{ id: 521, name: "ნიკოლოზ კერესელიძე", pid: 516 },
 		{ id: 522, name: "დემეტრე კაპანაძე", mid: 510, fid: 512, image: "demetre_kapanadze.jpg" },
 		{ id: 523, name: "ალექსი კაპანაძე", mid: 510, fid: 512, image: "aleksandre_kapanadze.jpg" },
 		{ id: 524, name: "ელენე კაპანაძე", mid: 510, fid: 512, image: "elene_kapanadze.jpg" },
@@ -43,12 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id:   9, name: "ოქროპირი", death: '????', fid: 7, pid: 180 },
 		{ id:  10, name: "სესიკია", death: '????', fid: 7 },
 		{ id:  11, name: "ბახვა", birth: 1875, death: '19??', pid: 213, fid: 9, mid: 180 },
-		{ id: 213, name: "მარიამ კორძახია", birth: '18??', death: '19??', pids: 11 },
+		{ id: 213, name: "მარიამ კორძახია", birth: '18??', death: '19??' },
 		{ id:  12, name: "მატრონა", death: '????', pid: 170, fid: 9, mid: 180 },
 		{ id:  13, name: "ფატი", death: '????', pid: 171, fid: 9, mid: 180 },
 		{ id:  14, name: "ვასილი", birth: 1888, pid: 131, fid: 11, mid: 213 },
 		{ id:  15, name: "ივანე", birth: 1895, death: 1977, pid: 205, fid: 11, mid: 213, profession: "დურგალი", image: "ivane.jpg" },
-		{ id:  16, name: "გიორგი", birth: 1900, death: '19??', pids: [134], fid: 11, mid: 213 },
+		{ id:  16, name: "გიორგი", birth: 1900, death: '19??', pid: 134, fid: 11, mid: 213 },
 		{ id:  17, name: "ელპიტი", birth: 1890, death: '19??', fid: 11, mid: 213 },
 		{ id: 205, name: "ანეტა მაკალათია", birth: 1905, death: 1988, profession: "დიასახლისი", image: "aneta_makalatia.jpg" },
 		{ id:  18, name: "ვალოდია", death: '????', mid: 131, fid: 14 },
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 131, name: "---"},
 		{ id: 132, name: "სოფიკო თორდია", image: "sofiko_tordia.jpg" },
 		{ id: 133, name: "ნატაშა ძაძამია", death: '19??', image: "natasha_dzadzamia.jpg" },
-		{ id: 134, name: "აგრა კორძახია", image: "agra_kordzakhia.jpg" },
+		{ id: 134, name: "აგრა კორძახია", death: '19??', image: "agra_kordzakhia.jpg" },
 		{ id: 135, name: "მაყვალა გოჩოლეიშვილი" },
 		{ id: 136, name: "თინათინ ქირია"},
 		{ id: 137, name: "---", fid: 24 },
@@ -448,14 +448,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function layoutTree(nodeElement, depth = 0) {
-    const childrenContainer = nodeElement.querySelector('.children');
-    if (!childrenContainer) return nodeElement.offsetWidth;
-
     const nodeWidth = nodeElement.offsetWidth;
     const partnerSpacing = 20; // Closer spacing for partners
     const horizontalSpacing = 50;
     const baseVerticalSpacing = 100; // Minimum vertical spacing
     const verticalSpacingIncrement = 100; // Additional spacing for each depth level
+	
+    const childrenContainer = nodeElement.querySelector('.children');
+    if (!childrenContainer || childrenContainer.children.length === 0) {
+		//console.log(`Leaf width: ${nodeWidth}`);
+		return nodeWidth;
+	}
+	
+	const bothParents = !(nodeElement.dataset.fid === undefined || nodeElement.dataset.mid === undefined);
+	//console.log(`both: ${bothParents}`);
 
 
     let subtreeWidth = 0;
@@ -490,7 +496,7 @@ function layoutTree(nodeElement, depth = 0) {
     subtreeWidth = Math.max(subtreeWidth - horizontalSpacing, nodeWidth); // Ensure minimum width
 
 	const verticalSpacing = baseVerticalSpacing + (Math.max(0, 10-depth) * verticalSpacingIncrement);
-    let currentLeft = nodeWidth / 2 - subtreeWidth / 2;
+    let currentLeft = (bothParents? (nodeWidth + partnerSpacing) / 2 : 0) + nodeWidth / 2 - subtreeWidth / 2;
     childPairs.forEach(pair => {
 		let childWidth = pair.node2? nodeWidth * 2 + partnerSpacing : nodeWidth;
         pair.node1.style.position = 'absolute';
@@ -538,6 +544,10 @@ function createNodes(nodes) {
         const nodeElement = document.createElement('div');
         nodeElement.classList.add('node');
         nodeElement.setAttribute('data-id', node.id);
+		if(node.fid !== undefined)
+			nodeElement.setAttribute('data-fid', node.fid);
+		if(node.mid !== undefined)
+			nodeElement.setAttribute('data-mid', node.mid);
         //nodeElement.setAttribute('data-birth', node.birth);
 		
 
