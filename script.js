@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 371, fid: 362, name: "ციალა" },
 		{ id: 372, fid: 362, name: "ლერი" },
 		{ id: 373, fid: 372, name: "ლიზიკო", image: "liziko.jpg" },
-		{ id: 374, fid: 372, name: "ნათია" },
+		{ id: 374, fid: 372, name: "ნათია", image: "natia_3.jpg" },
 		{ id: 375, fid: 372, name: "ანი" },
 		{ id: 376, fid: 367, name: "მამუკა" },
 		{ id: 377, fid: 367, name: "კახაბერი" },
