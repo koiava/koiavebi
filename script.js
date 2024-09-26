@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const nodes = [
 	/*
-        { id: 500, name: "დანიელი(თემურაზი)", death: '1???' },
+        { id: , name: "დანიელი(თემურაზი)", death: '1???' },
 		{ id: 501, name: "მიხეილი", death: '1???', fid: 500 },
         { id: 502, name: "რომანი", pid: 519, fid: 501 },
 		{ id: 503, name: "ზურაბი", birth: 1958, pid: 518, fid: 502, mid: 519, image: "zurabi_2.jpg" },
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 370, fid: 361, name: "მერი" },
 		{ id: 371, fid: 362, name: "ციალა" },
 		{ id: 372, fid: 362, name: "ლერი" },
-		{ id: 373, fid: 372, name: "ლიზიკო" },
+		{ id: 373, fid: 372, name: "ლიზიკო", image: "liziko.jpg" },
 		{ id: 374, fid: 372, name: "ნათია" },
 		{ id: 375, fid: 372, name: "ანი" },
 		{ id: 376, fid: 367, name: "მამუკა" },
