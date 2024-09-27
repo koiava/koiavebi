@@ -806,7 +806,7 @@ function setupZoomPan(nodes, s, tx, ty) {
 	let startScale;
 	
 	updateTransform();
-	
+	/*
 	document.querySelectorAll('.node').forEach(node => {
 		node.addEventListener('dblclick', function(event) {
 			event.stopPropagation();
@@ -839,7 +839,7 @@ function setupZoomPan(nodes, s, tx, ty) {
 			drawConnections(nodes); // Synchronize connections
 			createTimeLabels(nodes);
 		});
-	});
+	});*/
 	
 	// Adjust dimensions for interactions
     container.style.overflow = 'hidden';
