@@ -82,6 +82,15 @@ body {
     color: #666;
 }
 
+.node .fb-icon {
+    position: absolute;
+    top: 8px; /* Adjust this value for vertical placement */
+    right: 8px; /* Adjust this value for horizontal placement */
+    width: 16px; 
+    height: 16px; 
+    cursor: pointer;
+}
+
 .connections {
     position: absolute;
     top: 0;

@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 204, name: "ია მანჯგალაძე", birth: 1974, profession: "მასწავლებელი", image: "ia_manjgaladze.jpg" },
 		{ id:  27, name: "ნათია", birth: 1987, pid: 212, fid: 25, mid: 201, profession: "პროექტ-მენეჯერი", image: "natia.jpg" },
 		{ id: 212, name: "ლევანი იაგანაშვილი", birth: 1991, profession: "ფეხბურთელი", image: "levani_iaganashvili.jpg" },
-		{ id:  28, name: "ირაკლი", birth: 1988, pid: 200, fid: 25, mid: 201, profession: "პროგრამისტი", image: "irakli.jpg" },
+		{ id:  28, name: "ირაკლი", birth: 1988, fb: "i.koiava", pid: 200, fid: 25, mid: 201, profession: "პროგრამისტი", image: "irakli.jpg" },
 		{ id: 200, name: "სოფო ბექაური", birth: 1989, profession: "გერმანისტი", image: "sopo_bekauri.jpg" },
 		{ id:  29, name: "მარიამი", birth: 2010, fid: 28, mid: 200, image: "mariami.jpg" },
 		{ id:  30, name: "ელენე", birth: 2015, fid: 28, mid: 200, image: "elene.jpg" },
@@ -521,6 +521,7 @@ function nodeInnerHTML(node) {
 	let imagePath = "https://raw.githubusercontent.com/koiava/koiavebi/master/images/";
 	let thumbnailPath = "https://raw.githubusercontent.com/koiava/koiavebi/master/images/thumbnails/";
 	return `
+			${node.fb ? `<img class="fb-icon" src="images/icons/fb.png" alt="FB profile">` : ''}
             <img src="${thumbnailPath}${node.image}" alt="${node.name}">
             <div class="info">
                 <h3>${node.name}</h3>
@@ -558,6 +559,14 @@ function createNodes(nodes) {
             nodeElement.style.borderColor = '#ACE1AF'; // Apply green outline
         }
 
+		if (node.fb) {
+			const fbIcon = nodeElement.querySelector('.fb-icon');
+			fbIcon.addEventListener('click', (e) => {
+				e.stopPropagation(); // Prevent node-level events
+				const url = `https://www.facebook.com/${node.fb}/`; // Construct the URL
+				window.open(url, '_blank'); // Open in a new tab
+			});
+		}
 
         parentElement.appendChild(nodeElement);
 
