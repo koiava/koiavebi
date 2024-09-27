@@ -222,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 179, name: "ლიზა", birth: 2024, fid: 36, mid:209, image: "lisa.jpg" },
 		{ id: 180, name: "??? რურუა", death: '1???' },
 		{ id: 181, name: "ნინო ვალიშვილი", birth: 2009, mid: 63, fid: 128, image: "nino_valishvili.jpg" },
+		{ id: 182, name: "მაკა თედორაძე", mid: 138, image: "maka_tedoradze.jpg" },
 		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
