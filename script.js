@@ -61,26 +61,26 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id:  23, name: "ძაბული", birth: 1925, death: 1986, pid: 211, fid: 15, mid: 205, image: "dzabuli.jpg" },
 		{ id: 211, name: "პოლიკარპე ჭანტურია", birth: 1915, death: 1992, image: "polikarpe_chanturia.jpg" },
 		{ id:  24, name: "ბესიკო", birth: 1930, death: '19??', mid: 134, fid: 16, image: "besiko.jpg" },
-		{ id:  25, name: "ვახტანგი", birth: 1957, pid: 201, fid: 21, mid: 202, profession: "გეოლოგი", image: "vakhtangi.jpg" },
+		{ id:  25, name: "ვახტანგი", birth: 1957, fb: "vaxo.koiava", pid: 201, fid: 21, mid: 202, profession: "გეოლოგი", image: "vakhtangi.jpg" },
 		{ id: 201, name: "მზია გელაშვილი", birth: 1957, profession: "ბუღალტერი", image: "mzia_gelashvili.jpg" },
-		{ id:  26, name: "მერაბი", birth: 1961, pid: 204, fid: 21, mid: 202, profession: "ფიზიკოსი", image: "merabi.jpg" },
+		{ id:  26, name: "მერაბი", birth: 1961, fb: "merab.koiava.7", pid: 204, fid: 21, mid: 202, profession: "ფიზიკოსი", image: "merabi.jpg" },
 		{ id: 204, name: "ია მანჯგალაძე", birth: 1974, profession: "მასწავლებელი", image: "ia_manjgaladze.jpg" },
-		{ id:  27, name: "ნათია", birth: 1987, pid: 212, fid: 25, mid: 201, profession: "პროექტ-მენეჯერი", image: "natia.jpg" },
+		{ id:  27, name: "ნათია", birth: 1987, fb: "natia.qoiava", pid: 212, fid: 25, mid: 201, profession: "პროექტ-მენეჯერი", image: "natia.jpg" },
 		{ id: 212, name: "ლევანი იაგანაშვილი", birth: 1991, profession: "ფეხბურთელი", image: "levani_iaganashvili.jpg" },
 		{ id:  28, name: "ირაკლი", birth: 1988, fb: "i.koiava", pid: 200, fid: 25, mid: 201, profession: "პროგრამისტი", image: "irakli.jpg" },
 		{ id: 200, name: "სოფო ბექაური", birth: 1989, profession: "გერმანისტი", image: "sopo_bekauri.jpg" },
 		{ id:  29, name: "მარიამი", birth: 2010, fid: 28, mid: 200, image: "mariami.jpg" },
 		{ id:  30, name: "ელენე", birth: 2015, fid: 28, mid: 200, image: "elene.jpg" },
 		{ id:  31, name: "ვაჟა", birth: 2020, fid: 28, mid: 200, image: "vazha_2.jpg" },
-		{ id:  32, name: "დარეჯანი", birth: 1953, fid: 22, mid: 203, pid: 206, profession: "ექიმ-ლაბორანტი", image: "darejani.jpg" },
+		{ id:  32, name: "დარეჯანი", birth: 1953, fb: "darejan.koiava", fid: 22, mid: 203, pid: 206, profession: "ექიმ-ლაბორანტი", image: "darejani.jpg" },
 		{ id: 206, name: "ჟუგორი გიორგობიანი", birth: '1948', death: '2014', image: "jugori_giorgobiani.jpg" },
 		{ id:  33, name: "ავთანდილი", birth: 1954, death: 2008, fid: 22, mid: 203, pid: 207, image: "avto.jpg" },
 		{ id: 207, name: "ლელა ბერაია", image: "lela_beraia.jpg" },
-		{ id:  34, name: "ირმა", birth: 1964, pid: 210, fid: 22, mid: 203, profession: "ექიმ-ლაბორანტი", image: "irma.jpg" },
+		{ id:  34, name: "ირმა", birth: 1964, fb: "irma.koiava.9", pid: 210, fid: 22, mid: 203, profession: "ექიმ-ლაბორანტი", image: "irma.jpg" },
 		{ id: 210, name: "გულადი ხურცილავა", birth: 1962, image: "guladi_khurtsilava.jpg" },
-		{ id:  35, name: "ლევანი", birth: 1977, pid: 208, fid: 33, mid:207, image: "levani.jpg" },
+		{ id:  35, name: "ლევანი", birth: 1977, fb: "levani.qoiava.5", pid: 208, fid: 33, mid:207, image: "levani.jpg" },
 		{ id: 208, name: "ელენე მელაძე", birth: 1991, profession: "მასწავლებელი", image: "elene_meladze.jpg" },
-		{ id:  36, name: "ვლადიმერი", birth: 1981, pid: 209, fid: 33, mid:207, image: "lado.jpg" },
+		{ id:  36, name: "ვლადიმერი", birth: 1981, fb: "lado.qoiava", pid: 209, fid: 33, mid:207, image: "lado.jpg" },
 		{ id: 209, name: "თაკო სახურია", birth: 1992, profession: "ფარმაცევტი", image: "tako_sakhuria.jpg" },
 		{ id:  37, name: "სალომე", birth: 2004, fid: 26, mid: 204, profession: "იურისტი", image: "salome.jpg" },
 		{ id:  38, name: "ნინო", birth: 2005, fid: 26, mid: 204, profession: "მხატვარი", image: "niniko.jpg" },
@@ -108,8 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id:  59, name: "ოთარი", birth: 1953, death: 2019, pid: 127, fid: 53, mid: 178, image: "otari.jpg" },
 		{ id:  60, name: "ნარგიზი", birth: 1954, fid: 53, mid: 178, image: "nargizi.jpg" },
 		{ id:  61, name: "ნანი", fid: 53, mid: 178 },
-		{ id:  62, name: "ლევანი", birth: 1977, pid: 132, mid: 127, fid: 59, profession: "ბიზნესმენი", image: "levani_2.jpg" },
-		{ id:  63, name: "ხათუნა", birth: 1981, pid: 128, mid: 127, fid: 59, image: "khatuna.jpg" },
+		{ id:  62, name: "ლევანი", birth: 1977, fb: "levan.qoiava", pid: 132, mid: 127, fid: 59, profession: "ბიზნესმენი", image: "levani_2.jpg" },
+		{ id:  63, name: "ხათუნა", birth: 1981, fb: "profile.php?id=100004205866871", pid: 128, mid: 127, fid: 59, image: "khatuna.jpg" },
 		{ id:  64, name: "ნიკო", birth: 2000, mid: 132, fid: 62, image: "niko.jpg" },
 		{ id:  65, name: "ბარბარე", birth: 2000, mid: 132, fid: 62, image: "barbare.jpg" },
 		{ id:  66, name: "ლიზი", birth: 2004, mid: 132, fid: 62, image: "lizi.jpg" },
@@ -182,10 +182,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 139, name: "ქეთევანი", birth: 1955, mid: 141, fid: 111, profession: "გეოლოგი", image: "ketevani_2.jpg" },
 		{ id: 140, name: "საშა კუცია", death: '19??', image: "sasha_kutsia.jpg" },
 		{ id: 141, name: "ნათელა პატარაია", image: "natela_pataraia.jpg" },
-		{ id: 142, name: "კახა გიორგობიანი", birth: 1976, mid: 206, fid: 32, image: "kakha_giorgobiani.jpg" },
+		{ id: 142, name: "კახა გიორგობიანი", birth: 1976, fb: "kaxa.giorgobiani.5", mid: 206, fid: 32, image: "kakha_giorgobiani.jpg" },
 		{ id: 143, name: "თეა გიორგობიანი", birth: 1975, mid: 206, fid: 32, image: "tea_giorgobiani.jpg" },
-		{ id: 144, name: "მარიკა ხურცილავა", birth: 1990, profession: "მოცეკვავე", mid: 34, fid: 210, image: "marika_khurtsilava.jpg" },
-		{ id: 145, name: "მამუკა ხურცილავა", birth: 1991, profession: "რეაბილიტოლოგი", mid: 34, fid: 210, image: "mamuka_khurtsilava.jpg" },
+		{ id: 144, name: "მარიკა ხურცილავა", birth: 1990, fb: "mariam.khurtsilava.1", profession: "მოცეკვავე", mid: 34, fid: 210, image: "marika_khurtsilava.jpg" },
+		{ id: 145, name: "მამუკა ხურცილავა", birth: 1991, fb: "bkhurtsilava", profession: "რეაბილიტოლოგი", mid: 34, fid: 210, image: "mamuka_khurtsilava.jpg" },
 		{ id: 146, name: "ნუცა იაგანაშვილი", birth: 2021, mid: 27, fid: 212, image: "nutsa_iaganashvili.jpg" },
 		{ id: 147, name: "კოლია იაშვილი" },
 		{ id: 148, name: "თემური იაშვილი", mid: 101, fid: 147, image: "temuri_iashvili.jpg" },
@@ -563,7 +563,8 @@ function createNodes(nodes) {
 			const fbIcon = nodeElement.querySelector('.fb-icon');
 			fbIcon.addEventListener('click', (e) => {
 				e.stopPropagation(); // Prevent node-level events
-				const url = `https://www.facebook.com/${node.fb}/`; // Construct the URL
+				const ending = node.fb.startsWith("profile.php")? "" : "/";
+				const url = `https://www.facebook.com/${node.fb}${ending}`; // Construct the URL
 				window.open(url, '_blank'); // Open in a new tab
 			});
 		}
