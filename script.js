@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 203, name: "ეთერი ფანცულაია", birth: 1932, death: 2018, image: "eteri_pantsulaia.jpg" },
 		{ id:  23, name: "ძაბული", birth: 1925, death: 1986, pid: 211, fid: 15, mid: 205, image: "dzabuli.jpg" },
 		{ id: 211, name: "პოლიკარპე ჭანტურია", birth: 1915, death: 1992, image: "polikarpe_chanturia.jpg" },
-		{ id:  24, name: "ბესიკო", birth: 1930, death: '19??', mid: 134, fid: 16, image: "besiko.jpg" },
+		{ id:  24, name: "ბესიკო", birth: 1930, death: '19??', mid: 134, fid: 16, pid: 183, image: "besiko.jpg" },
 		{ id:  25, name: "ვახტანგი", birth: 1957, fb: "vaxo.koiava", pid: 201, fid: 21, mid: 202, profession: "გეოლოგი", image: "vakhtangi.jpg" },
 		{ id: 201, name: "მზია გელაშვილი", birth: 1957, fb: "mzia.gelashvili.9803", profession: "ბუღალტერი", image: "mzia_gelashvili.jpg" },
 		{ id:  26, name: "მერაბი", birth: 1961, fb: "merab.koiava.7", pid: 204, fid: 21, mid: 202, profession: "ფიზიკოსი", image: "merabi.jpg" },
@@ -223,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 180, name: "??? რურუა", death: '1???' },
 		{ id: 181, name: "ნინო ვალიშვილი", birth: 2009, mid: 63, fid: 128, image: "nino_valishvili.jpg" },
 		{ id: 182, name: "მაკა თედორაძე", fb: "maka.tedoradze7", mid: 138, image: "maka_tedoradze.jpg" },
+		{ id: 183, name: "ეთერი კოტია", birth: 1932, death: '????', profession: "ექთანი" },
 		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
