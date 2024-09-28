@@ -321,11 +321,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 410, fid: 324, name: "კუკური" },
 		{ id: 411, name: "ქეთევან გოცირიძე", fb: "ketigotsiridze", mid: 400, fid: 412, image: "ketevan_gotsiridze.jpg" },
 		{ id: 412, name: "ბესო გოცირიძე", image: "beso_gotsiridze.jpg" },
-		{ id: 413, name: "ნუნუ გეგეშიძე", image: "nunu_gegeshidze.jpg" },
-		{ id: 414, name: "სალომე თავბერიძე", image: "salome_tavberidze.jpg" },
+		{ id: 413, name: "ნუნუ გეგეშიძე", fb: "profile.php?id=100016320312117", image: "nunu_gegeshidze.jpg" },
+		{ id: 414, name: "სალომე თავბერიძე", fb: "salo.tavberidze", image: "salome_tavberidze.jpg" },
 		{ id: 415, name: "ალექსანდრე", fid: 404, mid: 414,  image: "aleksandre_2.jpg" },
 		{ id: 416, name: "ნიკოლოზ არჩვაძე", image: "nikoloz_archvadze.jpg" },
-		{ id: 417, name: "ნინო კობაიძე", birth: 1969, image: "nino_kobaidze.jpg" },
+		{ id: 417, name: "ნინო კობაიძე", birth: 1969, fb: "ninokobaidze69", image: "nino_kobaidze.jpg" },
 		{ id: 418, name: "ნატალი", fid: 397, mid: 417, image: "natali.jpg" },
 		{ id: 419, name: "ოლღა ჩერქეზიშვილი", death: '19??', image: "olga_cherkezishvili.jpg" },
 		{ id: 420, name: "ნინო ჯუღელი", image: "nino_jugeli.jpg" },
@@ -551,25 +551,12 @@ function createNodes(nodes) {
 			nodeElement.setAttribute('data-fid', node.fid);
 		if(node.mid !== undefined)
 			nodeElement.setAttribute('data-mid', node.mid);
-        //nodeElement.setAttribute('data-birth', node.birth);
-		
 
         nodeElement.innerHTML = nodeInnerHTML(node);
 		if (node.death === undefined) {
             nodeElement.style.borderColor = '#ACE1AF'; // Apply green outline
         }
 
-/*
-		if (node.fb) {
-			const fbIcon = nodeElement.querySelector('.fb-icon');
-			fbIcon.addEventListener('click', (e) => {
-				e.stopPropagation(); // Prevent node-level events
-				const ending = node.fb.startsWith("profile.php")? "" : "/";
-				const url = `https://www.facebook.com/${node.fb}${ending}`; // Construct the URL
-				window.open(url, '_blank'); // Open in a new tab
-			});
-		}
-*/
         parentElement.appendChild(nodeElement);
 
         // Create a container for children
