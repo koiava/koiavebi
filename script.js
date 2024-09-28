@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 374, fid: 372, name: "ნათია", fb: "natia.koiava", image: "natia_3.jpg" },
 		{ id: 375, fid: 372, name: "ანი" },
 		{ id: 376, fid: 367, name: "მამუკა" },
-		{ id: 377, fid: 367, name: "კახაბერი" },
+		{ id: 377, fid: 367, name: "კახაბერი", birth: 1976, profession: "გეოლოგი" },
 		{ id: 378, fid: 376, name: "მარიამი" },
 		{ id: 379, fid: 376, name: "ლუკა" },
 		{ id: 380, fid: 377, name: "ნიკოლოზი" },
