@@ -521,7 +521,7 @@ function nodeInnerHTML(node) {
 	let imagePath = "https://raw.githubusercontent.com/koiava/koiavebi/master/images/";
 	let thumbnailPath = "https://raw.githubusercontent.com/koiava/koiavebi/master/images/thumbnails/";
 	return `
-			${node.fb ? `<img class="fb-icon" src="images/icons/fb.png" alt="FB profile">` : ''}
+			${node.fb ? `<img class="fb-icon" src="images/icons/fb.png" alt="FB profile" data-fb="${node.fb}">` : ''}
             <img src="${thumbnailPath}${node.image}" alt="${node.name}">
             <div class="info">
                 <h3>${node.name}</h3>
@@ -559,6 +559,7 @@ function createNodes(nodes) {
             nodeElement.style.borderColor = '#ACE1AF'; // Apply green outline
         }
 
+/*
 		if (node.fb) {
 			const fbIcon = nodeElement.querySelector('.fb-icon');
 			fbIcon.addEventListener('click', (e) => {
@@ -568,7 +569,7 @@ function createNodes(nodes) {
 				window.open(url, '_blank'); // Open in a new tab
 			});
 		}
-
+*/
         parentElement.appendChild(nodeElement);
 
         // Create a container for children
@@ -875,6 +876,24 @@ function setupZoomPan(nodes, s, tx, ty) {
         translateY = offsetY - scaleRatio * (offsetY - translateY);
 
         scale = newScale;
+	}
+	
+	document.querySelectorAll('.fb-icon').forEach(fbIcon => {
+		fbIcon.addEventListener('click', (e) => {
+			e.stopPropagation();
+			openFacebookProfile(e.target.dataset.fb);
+		});
+
+		fbIcon.addEventListener('touchstart', (e) => {
+			e.preventDefault();
+			openFacebookProfile(e.target.dataset.fb);
+		}, { passive: false });
+	});
+	
+	function openFacebookProfile(fbuser) {
+		const ending = fbuser.startsWith("profile.php")? "" : "/";
+		const url = `https://www.facebook.com/${fbuser}${ending}`; // Construct the URL
+		window.open(url, '_blank'); // Open in a new tab
 	}
 	
 	container.addEventListener('touchstart', function (e) {
