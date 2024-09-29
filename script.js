@@ -519,8 +519,8 @@ function layoutTree(nodeElement, depth = 0) {
 }
 
 function nodeInnerHTML(node) {
-	let imagePath = "https://raw.githubusercontent.com/koiava/koiavebi/master/images/";
-	let thumbnailPath = "https://raw.githubusercontent.com/koiava/koiavebi/master/images/thumbnails/";
+	let imagePath = "images/";
+	let thumbnailPath = "images/thumbnails/";
 	return `
 			${node.fb ? `<img class="fb-icon" src="images/icons/fb.png" alt="FB profile" data-fb="${node.fb}">` : ''}
             <img src="${thumbnailPath}${node.image}" alt="${node.name}">
