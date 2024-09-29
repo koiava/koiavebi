@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 381, fid: 377, name: "ნინი" },
 		{ id: 382, fid: 368, name: "ლალი" },
 		{ id: 383, fid: 368, name: "ხათუნა" },
-		{ id: 384, fid: 369, name: "რუსუდანი" },
+		{ id: 384, fid: 369, name: "რუსლანი" },
 		{ id: 385, fid: 369, name: "ლევანი" },
 		{ id: 386, fid: 385, name: "---" },
 		{ id: 387, fid: 385, name: "---" },
