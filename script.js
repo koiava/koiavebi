@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 319, fid: 317, name: "ანდრია", death: '1???' },
 		{ id: 320, fid: 318, name: "სანდრო", death: '1???' },
 		{ id: 321, fid: 318, name: "სალომე", death: '1???' },
-		{ id: 322, fid: 318, name: "ფარნა", death: '1???' },
+		{ id: 322, fid: 318, name: "ფარნა", death: '1949' },
 		{ id: 323, fid: 319, name: "პეტრე", death: '1???' },
 		{ id: 324, fid: 319, name: "პავლე", death: '1???' },
 		{ id: 325, fid: 319, name: "ალექსი", death: '1???' },
