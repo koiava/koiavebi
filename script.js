@@ -332,8 +332,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 420, name: "ნინო ჯუღელი", image: "nino_jugeli.jpg" },
 		{ id: 421, name: "თემური დევიძე" },
 		{ id: 422, name: "გია დევიძე", fid: 421, mid: 396 },
-		{ id: 423, name: "ჯილდა" },
-		{ id: 424, name: "ზურა", birth: 1986, fid: 357, mid: 423, image: "zura.jpg" },
+		{ id: 423, name: "ჯილდა", birth: 1960, fb: "profile.php?id=100072628033802", image: "jilda_makalatia.jpg" },
+		{ id: 424, name: "ზურა", birth: 1986, fb: "profile.php?id=100073972135549", fid: 357, mid: 423, image: "zura.jpg" },
 		
 		{ id: 1006, name: "მახა", birth: 1797, death: '1???', fid: 5 },
 		{ id: 1007, name: "გოჯოგია", death: '1???', fid: 5 },
