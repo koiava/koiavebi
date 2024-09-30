@@ -474,9 +474,7 @@ function layoutTree(nodeElement, depth = 0) {
 		return nodeWidth;
 	}
 	
-	const bothParents = !(nodeElement.dataset.fid === undefined || nodeElement.dataset.mid === undefined);
-	//console.log(`both: ${bothParents}`);
-
+	const bothParents = !(nodeElement.dataset.pid === undefined);
 
     let subtreeWidth = 0;
     const childPairs = [];
