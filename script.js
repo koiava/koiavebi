@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 365, fid: 323, name: "მინა" },
 		{ id: 366, fid: 360, name: "ტატიანა" },
 		{ id: 367, name: "პეტრე", birth: 1926, death: 1998, fid: 360, profession: "გეოლოგი", image: "petre.jpg" },
-		{ id: 368, fid: 360, name: "ბორისი" },
+		{ id: 368, fid: 360, name: "ბორისი", profession: "გეოლოგი" },
 		{ id: 369, fid: 360, name: "ჯემალი" },
 		{ id: 370, fid: 361, name: "მერი" },
 		{ id: 371, name: "ციალა", death: 2015, image: "ciala.jpg", fid: 362, mid: 433, pid: 431 },
