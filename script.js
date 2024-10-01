@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 164, name: "ზურაბი ფანცულაია", mid: 90, fid: 123 },
 		{ id: 165, name: "მერაბი ფანცულაია", mid: 90, fid: 123 },
 		{ id: 166, name: "--- პერტენავა"},
-		{ id: 167, name: "ჟიგული პერტენავა", mid: 87, fid: 166, image: "jiguli_pertenava.jpg" },
+		{ id: 167, name: "ჟიგული პერტენავა", birth: 1931, death: '193?', mid: 87, fid: 166, image: "jiguli_pertenava.jpg" },
 		{ id: 168, name: "ლია ჩუბინიძე"},
 		{ id: 169, name: "ნინელი იაშვილი", mid: 101, fid: 147 },
 		{ id: 170, name: "--- კაჭარავა", death: '1???' },
