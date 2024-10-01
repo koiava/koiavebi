@@ -225,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 182, name: "მაკა თედორაძე", fb: "maka.tedoradze7", mid: 138, image: "maka_tedoradze.jpg" },
 		{ id: 183, name: "ეთერი კოტია", birth: 1932, death: '????', profession: "ექთანი" },
 		{ id: 184, name: "ლანა ლაბარტყავა", fb: "lana.labartkava", birth: 1990, mid: 61, image: "lana_labartyava.jpg" },
+		{ id: 185, name: "დათო ლაბარტყავა", fb: "dato.labartyava.9", birth: 1988, mid: 61, image: "dato_labartyava.jpg" },
 		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
