@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 145, name: "მამუკა ხურცილავა", birth: 1991, fb: "bkhurtsilava", profession: "რეაბილიტოლოგი", mid: 34, fid: 210, image: "mamuka_khurtsilava.jpg" },
 		{ id: 146, name: "ნუცა იაგანაშვილი", birth: 2021, mid: 27, fid: 212, image: "nutsa_iaganashvili.jpg" },
 		{ id: 147, name: "კოლია იაშვილი" },
-		{ id: 148, name: "თემური იაშვილი", mid: 101, fid: 147, image: "temuri_iashvili.jpg" },
+		{ id: 148, name: "თემური იაშვილი", birth: 1955, fb: "profile.php?id=100008431927656", mid: 101, fid: 147, image: "temuri_iashvili.jpg" },
 		{ id: 149, name: "გიორგი", fid: 103, mid: 168 },
 		{ id: 150, name: "ნიკოლოზი", fid: 103, mid: 168 },
 		{ id: 151, name: "იოანე", fid: 104, mid: 153, image: "ioane.jpg" },
