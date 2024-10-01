@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 359, fid: 338, name: "ციალა" },
 		{ id: 360, fid: 323, name: "კლიმენტი", death: '????' },
 		{ id: 361, fid: 323, name: "ჯონდო" },
-		{ id: 362, fid: 323, name: "მიშა", death: '????', pid: 433, profession: "ბიზნესმენი", image: "mikhail.jpg" },
+		{ id: 362, fid: 323, name: "მიშა", death: '1963', pid: 433, profession: "ბიზნესმენი", image: "mikhail.jpg" },
 		{ id: 363, fid: 323, name: "ცირუ" },
 		{ id: 364, fid: 323, name: "გაიანე" },
 		{ id: 365, fid: 323, name: "მინა" },
