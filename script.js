@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id:  58, name: "თინათინი", fb: "tina.qoiava", mid: 135, fid: 55, image: "tina.jpg" },
 		{ id:  59, name: "ოთარი", birth: 1953, death: 2019, pid: 127, fid: 53, mid: 178, image: "otari.jpg" },
 		{ id:  60, name: "ნარგიზი", birth: 1954, fb: "profile.php?id=100084369526554", fid: 53, mid: 178, image: "nargizi.jpg" },
-		{ id:  61, name: "ნანი", fid: 53, mid: 178 },
+		{ id:  61, name: "ნანი", fid: 53, mid: 178, image: "nani.jpg" },
 		{ id:  62, name: "ლევანი", birth: 1977, fb: "levan.qoiava", pid: 132, mid: 127, fid: 59, profession: "ბიზნესმენი", image: "levani_2.jpg" },
 		{ id:  63, name: "ხათუნა", birth: 1981, fb: "profile.php?id=100004205866871", pid: 128, mid: 127, fid: 59, image: "khatuna.jpg" },
 		{ id:  64, name: "ნიკო", birth: 2000, mid: 132, fid: 62, image: "niko.jpg" },
@@ -224,6 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 181, name: "ნინო ვალიშვილი", birth: 2009, mid: 63, fid: 128, image: "nino_valishvili.jpg" },
 		{ id: 182, name: "მაკა თედორაძე", fb: "maka.tedoradze7", mid: 138, image: "maka_tedoradze.jpg" },
 		{ id: 183, name: "ეთერი კოტია", birth: 1932, death: '????', profession: "ექთანი" },
+		{ id: 184, name: "ლანა ლაბარტყავა", fb: "lana.labartkava", birth: 1990, mid: 61, image: "lana_labartyava.jpg" },
 		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
