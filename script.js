@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 124, name: "მერი ნიკურაძე", image: "meri_nikuradze.jpg" },
 		{ id: 125, name: "ზაალი შარაშენიძე", death: '????', image: "zaali_sharashenidze.jpg" },
 		{ id: 126, name: "ჯუმბერი კიკაჩეიშვილი", image: "jumberi_kikacheishvili.jpg" },
-		{ id: 127, name: "ნანული გაბელაია", birth: 1955, image: "nanuli_gabelaia.jpg" },
+		{ id: 127, name: "ნანული გაბელაია", birth: 1955, fb: "nanuli.gabelaia.5", image: "nanuli_gabelaia.jpg" },
 		{ id: 128, name: "გიორგი ვალიშვილი", image: "giorgi_valishvili.jpg" },
 		{ id: 129, name: "ირაკლი ქავთარაძე", image: "irakli_kavtaradze.jpg" },
 		{ id: 130, name: "ნატო?", fid: 24 },
