@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id:  27, name: "ნათია", birth: 1987, fb: "natia.qoiava", pid: 212, fid: 25, mid: 201, profession: "პროექტ-მენეჯერი", image: "natia.jpg" },
 		{ id: 212, name: "ლევანი იაგანაშვილი", birth: 1991, profession: "ფეხბურთელი", image: "levani_iaganashvili.jpg" },
 		{ id:  28, name: "ირაკლი", birth: 1988, fb: "i.koiava", pid: 200, fid: 25, mid: 201, profession: "პროგრამისტი", image: "irakli.jpg" },
-		{ id: 200, name: "სოფო ბექაური", birth: 1989, profession: "გერმანისტი", image: "sopo_bekauri.jpg" },
+		{ id: 200, name: "სოფო ბექაური", birth: 1989, fb: "sopo.bekauri", profession: "გერმანისტი", image: "sopo_bekauri.jpg" },
 		{ id:  29, name: "მარიამი", birth: 2010, fid: 28, mid: 200, image: "mariami.jpg" },
 		{ id:  30, name: "ელენე", birth: 2015, fid: 28, mid: 200, image: "elene.jpg" },
 		{ id:  31, name: "ვაჟა", birth: 2020, fid: 28, mid: 200, image: "vazha_2.jpg" },
