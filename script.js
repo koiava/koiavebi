@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 434, name: "ნინო დურგლიშვილი", fb: "nino.durglishvili.90", image: "nino_durglishvili.jpg" },
 		{ id: 435, name: "თამუნა ოშხერელი", fb: "tamuna.oshxereli", image: "tamuna_oshkhereli.jpg" },
 		{ id: 436, name: "ანდრია", mid: 435, fid: 408, image: "andria.jpg" },
-		{ id: 437, name: "მანჩო გიორგობიანი", birth: 1970, image: "mancho_giorgobiani.jpg" },
+		{ id: 437, name: "მანჩო გიორგობიანი", fb: "profile.php?id=100075203160768", birth: 1970, image: "mancho_giorgobiani.jpg" },
 		{ id: 438, name: "სანდრო", birth: 1992, death: 2017, mid: 437, fid: 407, image: "sandro.jpg" },
 		{ id: 439, name: "მიკა", mid: 437, fid: 407 },
 		{ id: 440, name: "რეზი", mid: 437, fid: 407 },
