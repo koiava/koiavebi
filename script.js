@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 183, name: "ეთერი კოტია", birth: 1932, death: '????', profession: "ექთანი" },
 		{ id: 184, name: "ლანა ლაბარტყავა", fb: "lana.labartkava", birth: 1990, mid: 61, image: "lana_labartyava.jpg" },
 		{ id: 185, name: "დათო ლაბარტყავა", fb: "dato.labartyava.9", birth: 1988, mid: 61, image: "dato_labartyava.jpg" },
-		
+		{ id: 186, name: "რევაზ ცირეკიძე", fb: "rcirekidze", birth: 1988, mid: 139, image: "revaz_cirikidze.jpg" },
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
 		{ id: 318, fid: 317, name: "ბასა", death: '1???' },
