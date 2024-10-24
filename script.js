@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 184, name: "ლანა ლაბარტყავა", fb: "lana.labartkava", birth: 1990, mid: 61, image: "lana_labartyava.jpg" },
 		{ id: 185, name: "დათო ლაბარტყავა", fb: "dato.labartyava.9", birth: 1988, mid: 61, image: "dato_labartyava.jpg" },
 		{ id: 186, name: "რევაზ ცირეკიძე", fb: "rcirekidze", birth: 1988, mid: 139, image: "revaz_cirikidze.jpg" },
-		{ id: 187, name: "ბუხუტი ინჯგია", birth: 1926, death: 2012 },
+		{ id: 187, name: "ბუხუტი ინჯგია", birth: 1926, death: 2012, image: "bukhuti_injgia.jpg" },
 		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
