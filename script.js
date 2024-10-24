@@ -157,8 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 110, fid: 108, name: "ირაკლი" },
 		{ id: 111, name: "მურმანი", birth: 1932, death: 1982, mid: 122, pid: 141, fid: 82, profession: "გეოლოგი", image: "murmani.jpg" },
 		{ id: 112, name: "ჯული", mid: 122, fid: 82 },
-		{ id: 113, name: "მარგო", mid: 122, fid: 82 },
-		{ id: 114, name: "მედიკო", mid: 122, fid: 82 },
+		{ id: 113, name: "მარგო", mid: 122, fid: 82, pid: 187 },
+		{ id: 114, name: "მედიკო", birth: 1940, death: 2016, mid: 122, fid: 82 },
 		{ id: 119, name: "გიორგი მამალაძე", image: "giorgi_mamaladze.jpg" },
 		{ id: 120, name: "გიორგი", mid: 136, fid: 57 },
 		{ id: 121, name: "ანა", mid: 136, fid: 57 },
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 173, name: "გრიშა თაფლაძე", mid: 43, fid: 172 },
 		{ id: 174, name: "__(და) თაფლაძე", mid: 43, fid: 172 },
 		{ id: 175, name: "ბორის ძაძამია", mid: 17, profession: "ექიმი", image: "boris_dzadzamia.jpg" },
-		{ id: 176, name: "თამაზ ინჯგია", birth: 1962, fb: "tamaz.injgia", mid: 113, profession: "გეოლოგი", image: "tamaz_injgia.jpg" },
+		{ id: 176, name: "თამაზ ინჯგია", birth: 1962, fb: "tamaz.injgia", mid: 113, fid: 187, profession: "გეოლოგი", image: "tamaz_injgia.jpg" },
 		{ id: 177, name: "თეიმურაზ წერუაშვილი", birth: 1961, fb: "profile.php?id=100056236300491", mid: 114, profession: "გეოლოგი", image: "teimuraz_tseruashvili.jpg" },
 		{ id: 178, name: "თინა", birth: 1931, death: '1???' },
 		{ id: 179, name: "ლიზა", birth: 2024, fid: 36, mid:209, image: "lisa.jpg" },
@@ -227,6 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 184, name: "ლანა ლაბარტყავა", fb: "lana.labartkava", birth: 1990, mid: 61, image: "lana_labartyava.jpg" },
 		{ id: 185, name: "დათო ლაბარტყავა", fb: "dato.labartyava.9", birth: 1988, mid: 61, image: "dato_labartyava.jpg" },
 		{ id: 186, name: "რევაზ ცირეკიძე", fb: "rcirekidze", birth: 1988, mid: 139, image: "revaz_cirikidze.jpg" },
+		{ id: 187, name: "ბუხუტი ინჯგია", birth: 1926, death: 2012 },
+		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
 		{ id: 318, fid: 317, name: "ბასა", death: '1???' },
