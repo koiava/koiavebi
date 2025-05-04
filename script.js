@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 354, fid: 352, name: "ჯემალი" },
 		{ id: 355, fid: 334, name: "ფარნაოზი" },
 		{ id: 356, fid: 334, name: "ირინა" },
-		{ id: 357, fid: 335, name: "თამაზი", mid: 441, birth: 1948, death: '19??', pid: 423, image: "tamazi_2.jpg" },
+		{ id: 357, fid: 335, name: "თამაზი", mid: 441, birth: 1948, death: '1992', pid: 423, image: "tamazi_2.jpg" },
 		{ id: 358, fid: 338, name: "ეთერი" },
 		{ id: 359, fid: 338, name: "ციალა" },
 		{ id: 360, fid: 323, name: "კლიმენტი", death: '????' },
