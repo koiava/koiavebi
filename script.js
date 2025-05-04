@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 391, fid: 325, name: "ზინა" },
 		{ id: 392, fid: 325, name: "თათუშა" },
 		{ id: 393, fid: 325, name: "ვენერა" },
-		{ id: 394, name: "თამაზი", fid: 388, mid: 419, image: "tamazi.jpg" },
+		{ id: 394, name: "თამაზი", fid: 388, mid: 419, death: 2024, image: "tamazi.jpg" },
 		{ id: 395, name: "მერაბი", birth: 1935, fb: "merab.koiava.37", fid: 388, mid: 419, pid: 413, image: "merabi_2.jpg" },
 		{ id: 396, name: "ნატო", pid: 421, fid: 388, mid: 419 },
 		{ id: 397, name: "გიგი", birth: 1967, fb: "george.koiava", fid: 394, pid: 417,  image: "gigi.jpg" },
