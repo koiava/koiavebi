@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 441, name: "ლიდა", death: '19??'},
 		{ id: 442, name: "ეთერი", death: '19??'},
 		{ id: 443, name: "ლაურა კახიძე", birth: 1935, profession: "ინჟინერ-ფეიქარი" },
-		{ id: 444, name: "ალექსანდრა", death: '19??' },
+		{ id: 444, name: "ალექსანდრა დუნდუა", death: '19??' },
 		
 		
 		{ id: 1006, name: "მახა", birth: 1797, death: '1???', fid: 5 },
