@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id:  86, name: "ნონა", fid: 73 },
 		{ id:  87, name: "მერი", pid: 166, mid:133, fid: 76, image: "meri_2.jpg" },
 		{ id:  88, name: "ნესტანი", mid:133, fid: 76 },
-		{ id:  89, name: "იმედო", mid:133, fid: 76 },
+		{ id:  89, name: "იმედო", mid:133, fid: 76, birth: '19??', death: '19??', pid: 188, image: 'imedo.jpg' },
 		{ id:  90, name: "ვალიდა", pid: 123, mid:133, fid: 76, image: "valida.jpg" },
 		{ id:  91, name: "დავითი", death: '1???', pid: 124, mid:133, fid: 76, image: "dato.jpg" },
 		{ id:  92, name: "კონსტანტინე", mid:133, fid: 76 },
@@ -228,6 +228,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 185, name: "დათო ლაბარტყავა", fb: "dato.labartyava.9", birth: 1988, mid: 61, image: "dato_labartyava.jpg" },
 		{ id: 186, name: "რევაზ ცირეკიძე", fb: "rcirekidze", birth: 1988, mid: 139, image: "revaz_cirikidze.jpg" },
 		{ id: 187, name: "ბუხუტი ინჯგია", birth: 1926, death: 2012, image: "bukhuti_injgia.jpg" },
+		{ id: 188, name: "ტიტიკო გრიგოლია", birth: '19??', death: '????' },
+		{ id: 189, name: "ნარგიზა გრიგოლია", birth: '19??', mid: 89, fid: 188 },
+		{ id: 190, name: "ნინიკო გრიგოლია", birth: '19??', mid: 89, fid: 188 },
+		{ id: 191, name: "ნაირა გრიგოლია", birth: '19??', mid: 89, fid: 188 },
 		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
