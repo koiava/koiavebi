@@ -229,9 +229,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 186, name: "რევაზ ცირეკიძე", fb: "rcirekidze", birth: 1988, mid: 139, image: "revaz_cirikidze.jpg" },
 		{ id: 187, name: "ბუხუტი ინჯგია", birth: 1926, death: 2012, image: "bukhuti_injgia.jpg" },
 		{ id: 188, name: "ტიტიკო გრიგოლია", birth: '19??', death: '????', image: "titiko_grigolia.jpg" },
-		{ id: 189, name: "ნარგიზა გრიგოლია", birth: '19??', mid: 89, fid: 188, image: "nargiza_grigolia.jpg" },
-		{ id: 190, name: "ნინო გრიგოლია", birth: '19??', mid: 89, fid: 188, image: "nino_grigolia.jpg" },
-		{ id: 191, name: "ნაირა გრიგოლია", birth: '19??', mid: 89, fid: 188, image: "naira_grigolia.jpg" },
+		{ id: 189, name: "ნარგიზა გრიგოლია", birth: '19??', mid: 89, fid: 188, fb: "nargiza.grigolia", image: "nargiza_grigolia.jpg" },
+		{ id: 190, name: "ნინო გრიგოლია", birth: '19??', mid: 89, fid: 188, fb: "nino.sharukhia.5", image: "nino_grigolia.jpg" },
+		{ id: 191, name: "ნაირა გრიგოლია", birth: '19??', mid: 89, fid: 188, fb: "naira.sharukhia", image: "naira_grigolia.jpg" },
 		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
