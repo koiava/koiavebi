@@ -302,9 +302,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 382, name: "ლალი", fid: 368, mid: 443, birth: 1961, profession: "ექიმი", fb: "lali.koiava.5", pid: 425, image: "lali.jpg" },
 		{ id: 383, name: "ხათუნა", fid: 368, mid: 443, birth: 1963, death: 2007, pid: 428 },
 		{ id: 384, fid: 369, mid: 445, name: "რუსლანი" },
-		{ id: 385, fid: 369, mid: 445, name: "ლევანი" },
-		{ id: 386, fid: 385, name: "---" },
-		{ id: 387, fid: 385, name: "---" },
+		{ id: 385, name: "ლევანი", fid: 369, mid: 445, pid: 447, image: "levani_3.jpg" },
+		{ id: 387, name: "ლერა ოგონიოკი", fid: 385, mid: 447, birth: 2001, image: "lera_ogonek.jpg" },
 		{ id: 388, fid: 325, name: "ალექსი/ბონდო", death: '19??', pid: 419, image: "aleksandre_3.jpg" },
 		{ id: 389, fid: 325, name: "სიმონი" },
 		{ id: 390, fid: 325, name: "მირიანი" },
@@ -364,6 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 444, name: "ალექსანდრა დუნდუა", death: '19??' },
 		{ id: 445, name: "ლუდმილა", death: '19??' },
 		{ id: 446, name: "ლიანა კახიძე", death: '19??' },
+		{ id: 447, name: "კატია ოგონიოკი", birth: 1977, death: 2007, image: "katya_ogonek.jpg" },
 		
 		
 		{ id: 1006, name: "მახა", birth: 1797, death: '1???', fid: 5 },
