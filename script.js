@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 381, fid: 377, name: "ნინი" },
 		{ id: 382, name: "ლალი", fid: 368, mid: 443, birth: 1961, profession: "ექიმი", fb: "lali.koiava.5", pid: 425, image: "lali.jpg" },
 		{ id: 383, name: "ხათუნა", fid: 368, mid: 443, birth: 1963, death: 2007, pid: 428 },
-		{ id: 384, fid: 369, mid: 445, name: "რუსლანი" },
+		{ id: 384, fid: 369, mid: 445, name: "რუსლანი", image: "ruslani.jpg" },
 		{ id: 385, name: "ლევანი", fid: 369, mid: 445, pid: 447, image: "levani_3.jpg" },
 		{ id: 387, name: "ლერა ოგონიოკი", fid: 385, mid: 447, birth: 2001, image: "lera_ogonek.jpg" },
 		{ id: 388, fid: 325, name: "ალექსი/ბონდო", death: '19??', pid: 419, image: "aleksandre_3.jpg" },
