@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 372, name: "ლერი", fid: 362, mid: 433 },
 		{ id: 373, fid: 372, name: "ლიზიკო", fb: "liziko.koiava", image: "liziko.jpg" },
 		{ id: 374, fid: 372, name: "ნათია", fb: "natia.koiava", image: "natia_3.jpg" },
-		{ id: 375, fid: 372, name: "ანი" },
+		{ id: 375, fid: 372, name: "ანი", image: "ani.jpg" },
 		{ id: 376, fid: 367, mid: 446, name: "მამუკა", fb: "mamuka.koiava.7", image: "mamuka.jpg", pid: 434 },
 		{ id: 377, fid: 367, mid: 446, name: "კახაბერი", birth: 1976, fb: "kakha.koiava", profession: "გეოლოგი", image: "kakha.jpg" },
 		{ id: 378, name: "მარიამი", fb: "mariam.koiavaa", fid: 376, mid: 434, image: "mariami_3.jpg" },
