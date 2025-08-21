@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id:  61, name: "ნანი", fid: 53, mid: 178, image: "nani.jpg" },
 		{ id:  62, name: "ლევანი", birth: 1977, fb: "levan.qoiava", pid: 132, mid: 127, fid: 59, profession: "ბიზნესმენი", image: "levani_2.jpg" },
 		{ id:  63, name: "ხათუნა", birth: 1981, fb: "profile.php?id=100004205866871", pid: 128, mid: 127, fid: 59, image: "khatuna.jpg" },
-		{ id:  64, name: "ნიკო", birth: 2000, mid: 132, fid: 62, image: "niko.jpg" },
+		{ id:  64, name: "ნიკო", birth: 2000, fb: "niko.qoiava.2025", mid: 132, fid: 62, image: "niko.jpg" },
 		{ id:  65, name: "ბარბარე", birth: 2000, mid: 132, fid: 62, image: "barbare.jpg" },
 		{ id:  66, name: "ლიზი", birth: 2004, mid: 132, fid: 62, image: "lizi.jpg" },
 		{ id:  67, name: "ნატო", fid: 54, fb: "nato.qoiava.5", mid: 117, image: "nato.jpg" },
