@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id:  46, name: "თამარა", fid: 42 },
 		{ id:  47, name: "შუშუ", fid: 42 },
 		{ id:  48, name: "ლულუ", fid: 42 },
-		{ id:  52, name: "შოთა", fid: 44 },
+		{ id:  52, name: "შოთა", death: '19??', fid: 44 },
 		{ id:  53, name: "ლევანი", death: '1???', fid: 44, pid: 178 },
 		{ id:  49, name: "სერგო", fid: 44 },
 		{ id:  50, name: "ჭიჭიკო", fid: 44 },
