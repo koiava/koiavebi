@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id:  49, name: "სერგო", fid: 44 },
 		{ id:  50, name: "ჭიჭიკო", fid: 44 },
 		{ id:  51, name: "ტატიანა/კუკუშა", fid: 44 },
-		{ id:  54, name: "ჯონი", pid: 117, fid: 52, image: "joni.jpg" },
+		{ id:  54, name: "ჯონი", death: 2018, pid: 117, fid: 52, image: "joni.jpg" },
 		{ id: 117, name: "ლია გაბრიჩიძე", image: "lia_gabrichidze.jpg" },
 		{ id:  55, name: "ბუხუტი", death: 2025, pid: 135, fid: 52 },
 		{ id:  56, name: "რუსიკო", fid: 52 },
