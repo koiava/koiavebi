@@ -458,8 +458,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 1093, name: "ლევანი", fid: 1074 },
 		{ id: 1094, name: "ლანა", fid: 1074 },
 		{ id: 1095, name: "ლიზა ჯიბლაძე", death: '19??' },
-		{ id: 1096, name: "იოანე", mid: 1075, image: "ioane_2.jpg" },
+		{ id: 1096, name: "იოანე ჩხენკელი", mid: 1075, image: "ioane_2.jpg" },
 		{ id: 1097, name: "თინა", birth: 1930 },
+		{ id: 1098, name: "ნიკოლოზ ჩხენკელი", birth: '20??', mid: 1075 },
 		
 		
 		{ id: 2000, name: "ოთარი", death: '1???', fid: 2 },
