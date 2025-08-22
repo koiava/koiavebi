@@ -228,12 +228,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 185, name: "დათო ლაბარტყავა", fb: "dato.labartyava.9", birth: 1988, mid: 61, image: "dato_labartyava.jpg" },
 		{ id: 186, name: "რევაზ ცირეკიძე", fb: "rcirekidze", birth: 1988, mid: 139, image: "revaz_cirikidze.jpg" },
 		{ id: 187, name: "ბუხუტი ინჯგია", birth: 1926, death: 2012, image: "bukhuti_injgia.jpg" },
-		{ id: 188, name: "ტიტიკო შარუხია", birth: '1923', death: '2013', image: "titiko_sharukhia.jpg" },
-		{ id: 189, name: "ნარგიზა შარუხია", birth: '1950', mid: 89, fid: 188, fb: "nargiza.grigolia", image: "nargiza_sharukhia.jpg" },
-		{ id: 190, name: "ნინო შარუხია", birth: '1960', mid: 89, fid: 188, fb: "nino.sharukhia.5", image: "nino_sharukhia.jpg" },
-		{ id: 191, name: "ნაირა შარუხია", birth: '1957', mid: 89, fid: 188, fb: "naira.sharukhia", image: "naira_sharukhia.jpg" },
-		{ id: 192, name: "ემილია ___", birth: '2007', mid: 58 },
-		{ id: 193, name: "პეტრე ___", birth: '2011', mid: 58 },
+		{ id: 188, name: "ტიტიკო შარუხია", birth: 1923, death: 2013, image: "titiko_sharukhia.jpg" },
+		{ id: 189, name: "ნარგიზა შარუხია", birth: 1950, mid: 89, fid: 188, fb: "nargiza.grigolia", image: "nargiza_sharukhia.jpg" },
+		{ id: 190, name: "ნინო შარუხია", birth: 1960, mid: 89, fid: 188, fb: "nino.sharukhia.5", image: "nino_sharukhia.jpg" },
+		{ id: 191, name: "ნაირა შარუხია", birth: 1957, mid: 89, fid: 188, fb: "naira.sharukhia", image: "naira_sharukhia.jpg" },
+		{ id: 192, name: "ემილია ___", birth: 2007, mid: 58 },
+		{ id: 193, name: "პეტრე ___", birth: 2011, mid: 58 },
 		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
