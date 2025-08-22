@@ -232,6 +232,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 189, name: "ნარგიზა შარუხია", birth: '1950', mid: 89, fid: 188, fb: "nargiza.grigolia", image: "nargiza_sharukhia.jpg" },
 		{ id: 190, name: "ნინო შარუხია", birth: '1960', mid: 89, fid: 188, fb: "nino.sharukhia.5", image: "nino_sharukhia.jpg" },
 		{ id: 191, name: "ნაირა შარუხია", birth: '1957', mid: 89, fid: 188, fb: "naira.sharukhia", image: "naira_sharukhia.jpg" },
+		{ id: 192, name: "ემილია ___", birth: '2007', mid: 58 },
+		{ id: 193, name: "პეტრე ___", birth: '2011', mid: 58 },
 		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
