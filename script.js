@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id:  50, name: "ჭიჭიკო", fid: 44 },
 		{ id:  51, name: "ტატიანა/კუკუშა", fid: 44 },
 		{ id:  54, name: "ჯონი", death: 2018, pid: 117, fid: 52, image: "joni.jpg" },
-		{ id: 117, name: "ლია გაბრიჩიძე", image: "lia_gabrichidze.jpg" },
+		{ id: 117, name: "ლია გაბრიჩიძე", fb: "lia.gabrichidze.10", image: "lia_gabrichidze.jpg" },
 		{ id:  55, name: "ბუხუტი", death: 2025, pid: 135, fid: 52 },
 		{ id:  56, name: "რუსიკო", fid: 52 },
 		{ id:  57, name: "შოთა", pid: 136, mid: 135, fid: 55 },
