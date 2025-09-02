@@ -437,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 1072, name: "ნანა", birth: 1966, fb: "nana.koiava.35", pid: 1092, fid: 1063, mid: 1080, image: "nana_2.jpg"  },
 		{ id: 1073, name: "ციცო", fid: 1065 },
 		{ id: 1074, name: "მალხაზი", fid: 1065 },
-		{ id: 1075, name: "თინათინი", fb: "tinatin.koiava", birth: 1977, fid: 1069, profession: "სტომატოლოგი", image: "tinatini.jpg" },
+		{ id: 1075, name: "თინათინი", fb: "tinatin.koiava", birth: 1977, fid: 1069, pid: 1100, profession: "სტომატოლოგი", image: "tinatini.jpg" },
 		{ id: 1076, name: "ნიკა", fb: "nikolas.koiava", birth: 1980, fid: 1069, profession: "ბიზნეს ადმინისტრატორი/ლექტორი", image: "nika.jpg" },
 		{ id: 1077, name: "ეკატერინე", fid: 1070 },
 		{ id: 1078, name: "ელმირა", fid: 1070 },
@@ -458,10 +458,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 1093, name: "ლევანი", fid: 1074 },
 		{ id: 1094, name: "ლანა", fid: 1074 },
 		{ id: 1095, name: "ლიზა ჯიბლაძე", death: '19??' },
-		{ id: 1096, name: "იოანე ჩხენკელი", birth: 2017, mid: 1075, image: "ioane_2.jpg" },
+		{ id: 1096, name: "იოანე ჩხენკელი", birth: 2017, mid: 1075, fid: 1100, image: "ioane_2.jpg" },
 		{ id: 1097, name: "თინა", birth: 1930 },
-		{ id: 1098, name: "ნიკოლოზ ჩხენკელი", birth: 2013, mid: 1075 },
+		{ id: 1098, name: "ნიკოლოზ ჩხენკელი", birth: 2013, mid: 1075, fid: 1100, image: "nikoloz_chkhenkeli.jpg" },
 		{ id: 1099, name: "ანა", birth: 2018, fid: 1076, image: "ana.jpg" },
+		{ id: 1100, name: "გიორგი ჩხენკელი", birth: 1971 },
 		
 		
 		{ id: 2000, name: "ოთარი", death: '1???', fid: 2 },
