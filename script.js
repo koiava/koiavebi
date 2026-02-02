@@ -1,6 +1,33 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const nodes = [
-	/*
+/**
+ * FAMILY TREE CONFIGURATION & DATA
+ */
+const CONFIG = {
+    cardWidth: 140,  
+    cardHeight: 180, 
+    horizontalSpacing: 30,
+    
+    // Dynamic Vertical Spacing Configuration
+    // Start large (Root -> Gen 1), then decrease significantly
+    verticalSpacingStart: 600, 
+    verticalSpacingIncrement: -80, 
+    
+    partnerSpacing: 40,   
+    avatarSize: 80, // Slightly larger for better circular crop
+    thumbnailPath: "images/thumbnails/",
+    fullPath: "images/", // Path for high-res images
+    defaultColor: "#fff",
+    aliveBorderColor: "#ACE1AF", 
+    deadBorderColor: "#ccc",
+    selectedBorderColor: "#FFD700", // Gold for selection
+    textColor: "#333",
+    fontMain: "bold 13px Arial",
+    fontSub: "11px Arial",
+    fontSmall: "11px Arial" // Slightly larger for dates
+};
+
+// Complete dataset
+const rawNodes = [
+    /*
         { id: , name: "დანიელი(თემურაზი)", death: '1???' },
 		{ id: 501, name: "მიხეილი", death: '1???', fid: 500 },
         { id: 502, name: "რომანი", pid: 519, fid: 501 },
@@ -473,539 +500,1116 @@ document.addEventListener('DOMContentLoaded', () => {
 		{ id: 2005, name: "მარიამი", death: '1???', fid: 2003 },
 		{ id: 2006, name: "ალეკო", fid: 2004 },
 		{ id: 2007, name: "მარო დუნდუა", mid: 2005 },
-		
-    ];
+];
 
-    createNodes(nodes);
-	
-	const rootNode = document.querySelector('.tree > .node'); // Get only the first root node
-    layoutTree(rootNode); // Call layoutTree on the root node only
-	
-    setupZoomPan(nodes, 0.05, 1000, 300);
-    drawConnections(nodes, 1);
-    createTimeLabels(nodes);
-});
+/**
+ * IMAGE MANAGER
+ * Handles loading and caching of profile images.
+ */
+class ImageManager {
+    constructor() {
+        this.thumbnails = new Map();
+        this.fullImages = new Map();
+        this.placeholderCache = new Map();
+        this.facebookIcon = new Image();
+        this.facebookIcon.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAMElEQVR4nGP8//8/AyUYGhoKgPj/gXTA/wHRCCTG3///B0QjYwMDKQaA+H9ANAIAAOvD/fexx48hAAAAAElFTkSuQmCC'; // Simple blue placeholder
+        // Try to load real FB icon if available
+        const realFb = new Image();
+        realFb.onload = () => { this.facebookIcon = realFb; requestRedraw(); };
+        realFb.src = 'images/icons/fb.png';
+    }
 
-function layoutTree(nodeElement, depth = 0) {
-    const nodeWidth = nodeElement.offsetWidth;
-    const partnerSpacing = 20; // Closer spacing for partners
-    const horizontalSpacing = 50;
-    const baseVerticalSpacing = 100; // Minimum vertical spacing
-    const verticalSpacingIncrement = 100; // Additional spacing for each depth level
-	
-    const childrenContainer = nodeElement.querySelector('.children');
-    if (!childrenContainer || childrenContainer.children.length === 0) {
-		//console.log(`Leaf width: ${nodeWidth}`);
-		return nodeWidth;
-	}
-	
-	const bothParents = !(nodeElement.dataset.pid === undefined);
+    // Helper to load image
+    _load(src, map, key) {
+        if (map.has(key)) return map.get(key);
+        
+        const imgObj = { img: new Image(), loaded: false, error: false };
+        imgObj.img.src = src;
+        map.set(key, imgObj); // Set immediately to avoid duplicate requests
 
-    let subtreeWidth = 0;
-    const childPairs = [];
+        imgObj.img.onload = () => {
+            imgObj.loaded = true;
+            requestRedraw();
+        };
+        imgObj.img.onerror = () => {
+            imgObj.error = true;
+        };
+        return imgObj;
+    }
 
-    let i = 0;
-    while (i < childrenContainer.children.length) {
-        const child = childrenContainer.children[i];
-        let childWidth = layoutTree(child, depth + 1);
+    get(node, highQuality) {
+        if (!node.image) return null;
 
-        if (i < childrenContainer.children.length - 1 &&
-            child.dataset.pid === childrenContainer.children[i + 1].dataset.id) {
+        // Always ensure thumbnail is available (as fallback or primary)
+        let thumb = this._load(CONFIG.thumbnailPath + node.image, this.thumbnails, node.image);
 
-            const partner = childrenContainer.children[i + 1];
-            //const partnerWidth = layoutTree(partner);
-			
-            childPairs.push({
-                node1: child,
-                node2: partner,
-                totalWidth: Math.max(childWidth, nodeWidth * 2 + partnerSpacing)
+        if (highQuality) {
+            // Try loading full image
+            let full = this._load(CONFIG.fullPath + node.image, this.fullImages, node.image);
+            if (full.loaded) return full;
+        }
+
+        return thumb;
+    }
+}
+
+/**
+ * LAYOUT ENGINE
+ * Calculates positions of all nodes in memory.
+ */
+class TreeLayout {
+    constructor(nodes) {
+        this.nodes = new Map(nodes.map(n => [n.id, { ...n, w: CONFIG.cardWidth, h: CONFIG.cardHeight, x: 0, y: 0, children: [] }]));
+        this.root = null;
+        this.layers = []; // Optimization: Spatial indexing by Y-level (generation)
+        this.buildHierarchy();
+    }
+
+    buildHierarchy() {
+        const processed = new Set();
+        
+        // Link partners and children
+        this.nodes.forEach(node => {
+            // Link partner
+            if (node.pid) {
+                node.partnerNode = this.nodes.get(node.pid);
+            }
+
+            // Find children
+            this.nodes.forEach(potentialChild => {
+                if (potentialChild.fid === node.id || potentialChild.mid === node.id) {
+                    if (!node.children.includes(potentialChild)) {
+                        node.children.push(potentialChild);
+                    }
+                }
+            });
+        });
+
+        // Identify root (ID 1)
+        this.root = this.nodes.get(1);
+    }
+
+    calculate(ctx) {
+        if (!this.root) return;
+        // Recursive layout calculation
+        this.calculateSubtree(this.root, 0, new Set());
+        
+        // Center the whole tree roughly
+        const bounds = this.getBounds();
+        const offsetX = -bounds.minX + 50;
+        const offsetY = 50;
+        
+        this.nodes.forEach(n => {
+            n.x += offsetX;
+            n.y += offsetY;
+        });
+    }
+
+    calculateSubtree(node, depth, visited) {
+        if (visited.has(node.id)) return 0;
+        visited.add(node.id);
+
+        const nodeWidth = CONFIG.cardWidth;
+        
+        // Base width is just this node (plus partner if exists)
+        let subtreeWidth = 0;
+        const hasPartner = !!node.partnerNode;
+        const selfWidth = hasPartner ? (nodeWidth * 2 + CONFIG.partnerSpacing) : nodeWidth;
+
+        if (node.children.length === 0) {
+            subtreeWidth = selfWidth;
+        } else {
+            // Process children
+            // We need to group children who are partners to keep them together
+            const childGroups = [];
+            let i = 0;
+            
+            // Sort children by ID to ensure consistent order if needed, or leave as is
+            // node.children.sort((a,b) => a.id - b.id); 
+
+            const children = node.children;
+            const processedChildren = new Set();
+
+            while (i < children.length) {
+                const child = children[i];
+                if (processedChildren.has(child.id)) { i++; continue; }
+                
+                // Check if next sibling is partner
+                let groupWidth = 0;
+                let partner = null;
+                
+                // Try to find partner among siblings
+                if (child.pid) {
+                    partner = children.find(c => c.id === child.pid);
+                }
+
+                // Recursively layout child
+                let childW = this.calculateSubtree(child, depth + 1, visited);
+                
+                // If partner exists in the children list, mark as processed (layout handled in child's partner logic usually?)
+                // Actually, the original logic handles specific pairing in the children loop
+                // In my structure, calculateSubtree handles the node+partner width. 
+                // But we need to make sure we don't process the partner again as a primary child iteration
+                
+                if (partner) {
+                        processedChildren.add(partner.id);
+                        // If the partner was a child of this node (e.g. inter-family marriage?), we skip
+                }
+                
+                processedChildren.add(child.id);
+
+                childGroups.push({ node: child, width: Math.max(childW, child.w) });
+                i++;
+            }
+
+            // Sum up widths
+            let totalChildrenWidth = 0;
+            childGroups.forEach((g, idx) => {
+                    totalChildrenWidth += g.width;
+                    if (idx < childGroups.length - 1) totalChildrenWidth += CONFIG.horizontalSpacing;
             });
 
-            i += 2; // Skip the partner node as it is already handled
-        } else {
-            childPairs.push({ node1: child, totalWidth: childWidth });
-            i++;
+            subtreeWidth = Math.max(selfWidth, totalChildrenWidth);
         }
-
-        subtreeWidth += childPairs[childPairs.length - 1].totalWidth + horizontalSpacing;
+        
+        return subtreeWidth;
     }
 
-    subtreeWidth = Math.max(subtreeWidth - horizontalSpacing, nodeWidth); // Ensure minimum width
+    // Simplified Reingold-Tilford-ish layout for Family Trees
+    // 1. Post-order: compute width of every subtree
+    // 2. Pre-order: assign X positions
+    layout() {
+            this.resetPositions();
+            this.widths(this.root);
+            this.layers = []; // Reset layers
+            this.assignCoordinates(this.root, 0, 0);
+    }
 
-	const verticalSpacing = baseVerticalSpacing + (Math.max(0, 10-depth) * verticalSpacingIncrement);
-    let currentLeft = (bothParents? (nodeWidth + partnerSpacing) / 2 : 0) + nodeWidth / 2 - subtreeWidth / 2;
-    childPairs.forEach(pair => {
-		let childWidth = pair.node2? nodeWidth * 2 + partnerSpacing : nodeWidth;
-        pair.node1.style.position = 'absolute';
-        pair.node1.style.left = `${currentLeft + pair.totalWidth/2 - childWidth/2}px`;
-        pair.node1.style.top = `${verticalSpacing}px`;
+    resetPositions() {
+        this.nodes.forEach(n => { n._w = 0; n.x = 0; n.y = 0; });
+    }
 
-        if (pair.node2) { // Adjust for partner
-            pair.node2.style.position = 'absolute';
-            pair.node2.style.left = `${currentLeft + pair.totalWidth/2 - childWidth/2 + pair.node1.offsetWidth + partnerSpacing}px`;
-            pair.node2.style.top = `${verticalSpacing}px`;
+    widths(node) {
+        if(!node) return 0;
+        
+        const myWidth = node.partnerNode ? (CONFIG.cardWidth * 2 + CONFIG.partnerSpacing) : CONFIG.cardWidth;
+        
+        if (!node.children || node.children.length === 0) {
+            node._treeWidth = myWidth;
+            return myWidth;
         }
 
-        currentLeft += pair.totalWidth + horizontalSpacing;
-    });
+        let childrenWidth = 0;
+        // Group children logic similar to original
+        const groups = [];
+        const visitedChildren = new Set();
+        
+        // We must traverse children in the order they were pushed to maintain original structure logic
+        for(let i=0; i<node.children.length; i++) {
+            const child = node.children[i];
+            if(visitedChildren.has(child.id)) continue;
+            visitedChildren.add(child.id);
 
-    return subtreeWidth;
-}
+            // Is this child's partner also a child of the current node? (rare but possible)
+            // Or simply, does the child have a partner?
+            // The width of the child includes their partner
+            
+            // Check if the NEXT child in array is the partner (original logic dependency)
+            // The original code: if (i < length-1 && child.pid === next.id)
+            let nextChild = null;
+            if (i < node.children.length - 1) {
+                nextChild = node.children[i+1];
+            }
+            
+            // If next child is the partner, we consume it
+            if (nextChild && child.pid === nextChild.id) {
+                    visitedChildren.add(nextChild.id);
+                    // Note: The child node itself will handle drawing the partner. 
+                    // But for layout width, we need to know the width of the pair's subtree.
+                    // But 'nextChild' isn't the root of the pair, 'child' is.
+                    // Actually, in the original code, the layout returns width for the pair.
+            }
 
-function nodeInnerHTML(node) {
-	let imagePath = "images/";
-	let thumbnailPath = "images/thumbnails/";
-	return `
-			${node.fb ? `<img class="fb-icon" src="images/icons/fb.png" alt="FB profile" data-fb="${node.fb}">` : ''}
-            <img src="${thumbnailPath}${node.image}" alt="${node.name}">
-            <div class="info">
-                <h3>${node.name}</h3>
-                <p>${node.profession || ''}</p>
-            </div>
-            <div class="node-footer">
-                <span class="birth">${node.birth || ''}</span>
-                <span class="death">${node.death || ''}</span>
-            </div>
-        `;
-}
+            const w = this.widths(child);
+            groups.push({ node: child, width: w });
+            childrenWidth += w;
+        }
+        
+        childrenWidth += (groups.length - 1) * CONFIG.horizontalSpacing;
+        
+        node._childrenTotalWidth = childrenWidth;
+        node._treeWidth = Math.max(myWidth, childrenWidth);
+        node._childGroups = groups;
+        return node._treeWidth;
+    }
 
-function createNodes(nodes) {
-    const tree = document.querySelector('.tree');
-    tree.innerHTML = ''; // Clear previous content
+    // Calculates Y position based on depth using cumulative increment
+    getYForDepth(depth) {
+        let y = 50; // Initial Top Margin
+        let currentSpacing = CONFIG.verticalSpacingStart;
+        const minSpacing = CONFIG.cardHeight + 50; // Minimum gap of 50px
+        
+        for (let i = 0; i < depth; i++) {
+            y += currentSpacing;
+            // Decrease spacing, but do not go below minimum
+            if (currentSpacing > minSpacing) {
+                currentSpacing += CONFIG.verticalSpacingIncrement; // Increment is negative
+            }
+            if (currentSpacing < minSpacing) currentSpacing = minSpacing;
+        }
+        return y;
+    }
 
-    const processed = new Set(); // Keep track of processed node IDs
+    assignCoordinates(node, x, depth) {
+        if(!node) return;
 
-    function addNode(node, parentElement) {
-        if (processed.has(node.id)) return; // Skip if already added
-        processed.add(node.id); // Mark this node as processed
-		
-        const nodeElement = document.createElement('div');
-        nodeElement.classList.add('node');
-        nodeElement.setAttribute('data-id', node.id);
-		if(node.fid !== undefined)
-			nodeElement.setAttribute('data-fid', node.fid);
-		if(node.mid !== undefined)
-			nodeElement.setAttribute('data-mid', node.mid);
+        node.depth = depth; // Store depth for rendering
 
-        nodeElement.innerHTML = nodeInnerHTML(node);
-		if (node.death === undefined) {
-            nodeElement.style.borderColor = '#ACE1AF'; // Apply green outline
+        // Use dynamic Y calculation
+        node.y = this.getYForDepth(depth);
+        
+        // Add to layer for efficient culling
+        if (!this.layers[depth]) this.layers[depth] = { y: node.y, nodes: new Set() };
+        this.layers[depth].nodes.add(node);
+        
+        // Center the node itself within its allocated tree width
+        // The allocated width is centered at x
+        // node is centered at x
+        
+        const hasPartner = !!node.partnerNode;
+        const blockWidth = hasPartner ? (CONFIG.cardWidth * 2 + CONFIG.partnerSpacing) : CONFIG.cardWidth;
+        
+        // Position of the primary node
+        // If partner, the block is centered. Primary is left side of block.
+        if (hasPartner) {
+            node.x = x - (blockWidth / 2) + (CONFIG.cardWidth / 2);
+            // Partner position
+            node.partnerNode.x = node.x + CONFIG.cardWidth + CONFIG.partnerSpacing;
+            node.partnerNode.y = node.y;
+            
+            // Add partner to layer
+            this.layers[depth].nodes.add(node.partnerNode);
+        } else {
+            node.x = x;
         }
 
-        parentElement.appendChild(nodeElement);
+        if (node._childGroups && node._childGroups.length > 0) {
+            let currentX = x - (node._childrenTotalWidth / 2); // Start left edge of children area
+            
+            node._childGroups.forEach(group => {
+                const childCenter = currentX + (group.width / 2);
+                this.assignCoordinates(group.node, childCenter, depth + 1);
+                currentX += group.width + CONFIG.horizontalSpacing;
+            });
+        }
+    }
 
-        // Create a container for children
-        const childrenContainer = document.createElement('div');
-        childrenContainer.classList.add('children'); // This will hold children horizontally
-        nodeElement.appendChild(childrenContainer);
-		
-		// Find children based on fid or mid
-        nodes.forEach(childNode => {
-            if (childNode.fid === node.id || childNode.mid === node.id) {
-                addNode(childNode, childrenContainer); // Add children to the container
+    getBounds() {
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        this.nodes.forEach(n => {
+            minX = Math.min(minX, n.x - CONFIG.cardWidth/2);
+            maxX = Math.max(maxX, n.x + CONFIG.cardWidth/2);
+            minY = Math.min(minY, n.y);
+            maxY = Math.max(maxY, n.y + CONFIG.cardHeight);
+        });
+        return { minX, maxX, minY, maxY, width: maxX-minX, height: maxY-minY };
+    }
+}
+
+/**
+ * RENDERER
+ */
+class TreeRenderer {
+    constructor(canvasId, nodes) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d', { alpha: false }); // Optimize for no transparency on bg
+        this.layoutEngine = new TreeLayout(nodes);
+        this.imageManager = new ImageManager();
+        this.selectedNodeId = null; // Track selected node
+        this.hoveredNode = null; // Track hovered node
+        this.mouseX = 0;
+        this.mouseY = 0;
+        
+        // State
+        this.transform = { x: 0, y: 0, k: 0.8 }; // Initial zoom
+        this.isDragging = false;
+        this.lastPos = { x: 0, y: 0 };
+        
+        this.init();
+    }
+
+    init() {
+        this.layoutEngine.layout();
+        
+        // Center initial view
+        const bounds = this.layoutEngine.getBounds();
+        this.transform.x = (window.innerWidth - bounds.width * this.transform.k) / 2 - bounds.minX * this.transform.k;
+        this.transform.y = 100;
+
+        this.bindEvents();
+        this.resize();
+        requestAnimationFrame(() => this.loop());
+        
+        document.getElementById('loading').style.opacity = 0;
+    }
+
+    bindEvents() {
+        const c = this.canvas;
+        
+        // Resize
+        window.addEventListener('resize', () => this.resize());
+
+        // Mouse / Touch
+        c.addEventListener('mousedown', e => this.startDrag(e.clientX, e.clientY));
+        c.addEventListener('mousemove', e => this.drag(e.clientX, e.clientY));
+        c.addEventListener('mouseup', () => this.endDrag());
+        c.addEventListener('mouseleave', () => this.endDrag());
+        
+        // Double click for selection
+        c.addEventListener('dblclick', e => this.handleDoubleClick(e));
+        
+        c.addEventListener('wheel', e => this.zoom(e));
+
+        // Touch support
+        c.addEventListener('touchstart', e => {
+            if(e.touches.length === 1) {
+                this.startDrag(e.touches[0].clientX, e.touches[0].clientY);
+                // Check click
+                this.handleTap(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, {passive: false});
+        
+        c.addEventListener('touchmove', e => {
+            e.preventDefault(); 
+            if(e.touches.length === 1) this.drag(e.touches[0].clientX, e.touches[0].clientY);
+        }, {passive: false});
+        
+        c.addEventListener('touchend', () => this.endDrag());
+
+        // Click detection
+        c.addEventListener('click', e => this.handleClick(e));
+
+        document.getElementById('btnRecenter').addEventListener('click', () => {
+                this.transform = { x: 100, y: 100, k: 0.8 };
+                this.requestRender();
+        });
+    }
+
+    resize() {
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = window.innerWidth * dpr;
+        this.canvas.height = window.innerHeight * dpr;
+        this.canvas.style.width = window.innerWidth + 'px';
+        this.canvas.style.height = window.innerHeight + 'px';
+        this.ctx.scale(dpr, dpr);
+        this.requestRender();
+    }
+
+    startDrag(x, y) {
+        this.isDragging = true;
+        this.lastPos = { x, y };
+        this.canvas.style.cursor = 'grabbing';
+    }
+
+    drag(x, y) {
+        if (this.isDragging) {
+            const dx = x - this.lastPos.x;
+            const dy = y - this.lastPos.y;
+            this.transform.x += dx;
+            this.transform.y += dy;
+            this.lastPos = { x, y };
+            this.requestRender();
+        } else {
+            this.handleHover(x, y);
+        }
+    }
+
+    handleHover(sx, sy) {
+        this.mouseX = sx;
+        this.mouseY = sy;
+
+        const pos = this.screenToWorld(sx, sy);
+        let cursor = 'grab';
+        let hovered = null;
+        
+        for (const node of this.layoutEngine.nodes.values()) {
+            const hw = CONFIG.cardWidth / 2;
+            // Check bounds of card
+            if (pos.x >= node.x - hw && pos.x <= node.x + hw &&
+                pos.y >= node.y && pos.y <= node.y + CONFIG.cardHeight) {
+                
+                hovered = node;
+
+                if (node.fb) {
+                    // Hit test FB icon (top right corner logic)
+                    // Drawn at x + w - 24, y + 8 (relative to top-left of card)
+                    // Top-left of card is node.x - hw, node.y
+                    const cardLeft = node.x - hw;
+                    const iconX = cardLeft + CONFIG.cardWidth - 24;
+                    const iconY = node.y + 8;
+                    
+                    if (pos.x >= iconX && pos.x <= iconX + 16 &&
+                        pos.y >= iconY && pos.y <= iconY + 16) {
+                        cursor = 'pointer';
+                    }
+                }
+                break;
+            }
+        }
+
+        if (this.hoveredNode !== hovered) {
+            this.hoveredNode = hovered;
+            this.requestRender();
+        }
+
+        this.canvas.style.cursor = cursor;
+    }
+
+    endDrag() {
+        this.isDragging = false;
+        if (this.canvas.style.cursor === 'grabbing') {
+            this.canvas.style.cursor = 'grab';
+        }
+    }
+
+    zoom(e) {
+        e.preventDefault();
+        const zoomSpeed = 0.001;
+        const zoomFactor = Math.exp(-e.deltaY * zoomSpeed);
+        
+        // Zoom towards mouse pointer
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        // Increased zoom out capability to fit larger trees
+        const newScale = Math.min(Math.max(0.02, this.transform.k * zoomFactor), 5);
+        
+        this.transform.x = mouseX - (mouseX - this.transform.x) * (newScale / this.transform.k);
+        this.transform.y = mouseY - (mouseY - this.transform.y) * (newScale / this.transform.k);
+        this.transform.k = newScale;
+        
+        this.requestRender();
+    }
+
+    screenToWorld(sx, sy) {
+        return {
+            x: (sx - this.transform.x) / this.transform.k,
+            y: (sy - this.transform.y) / this.transform.k
+        };
+    }
+
+    handleTap(sx, sy) {
+            // Simple wrapper for click logic on touch
+            this.handleClick({clientX: sx, clientY: sy});
+    }
+
+    handleDoubleClick(e) {
+        const pos = this.screenToWorld(e.clientX, e.clientY);
+        let clickedNode = null;
+
+        for (const node of this.layoutEngine.nodes.values()) {
+            const hw = CONFIG.cardWidth / 2;
+            // Check bounds of card
+            if (pos.x >= node.x - hw && pos.x <= node.x + hw &&
+                pos.y >= node.y && pos.y <= node.y + CONFIG.cardHeight) {
+                clickedNode = node;
+                break;
+            }
+        }
+
+        if (clickedNode) {
+            this.selectNode(clickedNode);
+        } else {
+            this.selectedNodeId = null; // Deselect
+            
+            // Clear URL parameter
+            const url = new URL(window.location);
+            url.searchParams.delete('id');
+            window.history.replaceState({}, '', url);
+
+            this.requestRender();
+        }
+    }
+
+    selectNode(node) {
+        this.selectedNodeId = node.id;
+        
+        // Focus and zoom on the selected node
+        const targetScale = 2.5; 
+        const rect = this.canvas.getBoundingClientRect();
+        
+        // Calculate translation to center the node
+        this.transform.k = targetScale;
+        this.transform.x = (rect.width / 2) - (node.x * targetScale);
+        this.transform.y = (rect.height / 2) - ((node.y + CONFIG.cardHeight / 2) * targetScale);
+        
+        // Update URL parameter without reloading
+        const url = new URL(window.location);
+        url.searchParams.set('id', node.id);
+        window.history.replaceState({}, '', url);
+
+        this.requestRender();
+    }
+
+    handleClick(e) {
+        if (this.isDragging && (Math.abs(e.clientX - this.lastPos.x) > 5 || Math.abs(e.clientY - this.lastPos.y) > 5)) return; // It was a drag
+
+        const pos = this.screenToWorld(e.clientX, e.clientY);
+        
+        // Hit test nodes
+        for (const node of this.layoutEngine.nodes.values()) {
+            const hw = CONFIG.cardWidth / 2;
+            if (pos.x >= node.x - hw && pos.x <= node.x + hw &&
+                pos.y >= node.y && pos.y <= node.y + CONFIG.cardHeight) {
+                
+                // Clicked a node
+                if (node.fb) {
+                        // Hit test FB icon (top right corner logic)
+                        const cardLeft = node.x - hw;
+                        const iconX = cardLeft + CONFIG.cardWidth - 24;
+                        const iconY = node.y + 8;
+                        
+                        if (pos.x >= iconX && pos.x <= iconX + 16 &&
+                            pos.y >= iconY && pos.y <= iconY + 16) {
+                            this.openFacebook(node.fb);
+                        }
+                }
+                break;
+            }
+        }
+    }
+
+    openFacebook(fb) {
+        const ending = fb.startsWith("profile.php") ? "" : "/";
+        const url = `https://www.facebook.com/${fb}${ending}`;
+        window.open(url, '_blank');
+    }
+
+    requestRender() {
+        if (!this.ticking) {
+            requestAnimationFrame(() => this.loop());
+            this.ticking = true;
+        }
+    }
+
+    loop() {
+        this.ticking = false;
+        const ctx = this.ctx;
+        const width = this.canvas.width / (window.devicePixelRatio||1);
+        const height = this.canvas.height / (window.devicePixelRatio||1);
+
+        // Clear
+        ctx.fillStyle = "#f5f5f5";
+        ctx.fillRect(0, 0, width, height);
+
+        // Draw Timeline (Static on left)
+        this.drawTimeline(ctx, height);
+
+        // Setup Transform
+        ctx.save();
+        ctx.translate(this.transform.x, this.transform.y);
+        ctx.scale(this.transform.k, this.transform.k);
+
+        // Draw Connections First
+        this.drawConnections(ctx);
+
+        // Draw Nodes
+        this.drawNodes(ctx);
+
+        ctx.restore();
+
+        // Draw Tooltip (Screen Space, after restore)
+        this.drawTooltip(ctx);
+    }
+
+    fitText(ctx, text, maxWidth) {
+        let width = ctx.measureText(text).width;
+        if (width <= maxWidth) return text;
+        
+        let ellipsis = '...';
+        let truncated = text;
+        while (ctx.measureText(truncated + ellipsis).width > maxWidth && truncated.length > 0) {
+            truncated = truncated.slice(0, -1);
+        }
+        return truncated + ellipsis;
+    }
+
+    drawTooltip(ctx) {
+        if (!this.hoveredNode) return;
+        const node = this.hoveredNode;
+        
+        const text = node.name;
+        const subText = node.profession || "";
+        
+        ctx.save();
+        // Ensure identity transform for screen space drawing
+        ctx.setTransform(1, 0, 0, 1, 0, 0); 
+        
+        ctx.font = "bold 14px Arial";
+        const textWidth = ctx.measureText(text).width;
+        ctx.font = "12px Arial";
+        const subTextWidth = subText ? ctx.measureText(subText).width : 0;
+        
+        const boxWidth = Math.max(textWidth, subTextWidth) + 20;
+        const boxHeight = subText ? 46 : 28;
+        
+        // Position near mouse but keep within canvas
+        let x = this.mouseX + 15;
+        let y = this.mouseY + 15;
+
+        // Simple boundary check
+        if (x + boxWidth > ctx.canvas.width / window.devicePixelRatio) {
+            x = this.mouseX - boxWidth - 5;
+        }
+        if (y + boxHeight > ctx.canvas.height / window.devicePixelRatio) {
+            y = this.mouseY - boxHeight - 5;
+        }
+        
+        // Background
+        ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 1;
+        
+        ctx.beginPath();
+        ctx.roundRect(x, y, boxWidth, boxHeight, 6);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Text
+        ctx.fillStyle = "#fff";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        
+        ctx.font = "bold 14px Arial";
+        ctx.fillText(text, x + 10, y + 8);
+        
+        if (subText) {
+            ctx.font = "12px Arial";
+            ctx.fillStyle = "#ddd";
+            ctx.fillText(subText, x + 10, y + 26);
+        }
+        
+        ctx.restore();
+    }
+
+    drawNodes(ctx) {
+        const halfW = CONFIG.cardWidth / 2;
+        const scale = this.transform.k;
+        
+        // Determine LOD Level
+        let lod = 2; // High
+        if (scale < 0.2) lod = 0; // Low (Box)
+        else if (scale < 0.6) lod = 1; // Medium (No shadow/dates)
+
+        // High-res threshold (only load when really close)
+        const useHighRes = scale > 1.2;
+
+        // Culling: Only draw visible layers
+        const viewL = -this.transform.x / scale;
+        const viewT = -this.transform.y / scale;
+        const viewR = viewL + (this.canvas.width/window.devicePixelRatio) / scale;
+        const viewB = viewT + (this.canvas.height/window.devicePixelRatio) / scale;
+
+        // Optimization: Iterate layers instead of all nodes
+        // Assuming layers are mostly sorted by Y, we could optimize this loop further,
+        // but checking ~20 layers is extremely fast.
+        this.layoutEngine.layers.forEach(layer => {
+            if (!layer) return;
+            
+            // Check if entire layer is vertical visible
+            if (layer.y + CONFIG.cardHeight < viewT || layer.y > viewB) return;
+
+            // Iterate nodes in this visible layer
+            layer.nodes.forEach(node => {
+                // Horizontal culling
+                if (node.x + halfW < viewL || node.x - halfW > viewR) return;
+
+                this.drawSingleNode(ctx, node, lod, useHighRes);
+            });
+        });
+    }
+
+    drawSingleNode(ctx, node, lod, useHighRes) {
+        const x = node.x - CONFIG.cardWidth / 2;
+        const y = node.y;
+        const w = CONFIG.cardWidth;
+        const h = CONFIG.cardHeight;
+        const r = 8; // border radius
+
+        // --- LOD 0 (Low Detail - Zoomed Out) ---
+        if (lod === 0) {
+            ctx.fillStyle = CONFIG.defaultColor;
+            // Simple box
+            ctx.fillRect(x, y, w, h);
+            
+            // Border color indicates status
+            ctx.lineWidth = 4; // Thicker border to be visible
+            if (node.id === this.selectedNodeId) {
+                ctx.strokeStyle = CONFIG.selectedBorderColor;
+            } else {
+                ctx.strokeStyle = (node.death === undefined) ? CONFIG.aliveBorderColor : CONFIG.deadBorderColor;
+            }
+            ctx.strokeRect(x, y, w, h);
+            return;
+        }
+
+        // --- LOD 1 & 2 (Medium & High) ---
+        
+        // Card Background
+        ctx.fillStyle = CONFIG.defaultColor;
+        
+        // Shadow only on High LOD
+        if (lod === 2) {
+            ctx.shadowColor = "rgba(0,0,0,0.1)";
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetY = 2;
+        }
+        
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, r);
+        ctx.fill();
+        ctx.shadowColor = "transparent";
+
+        // Border
+        if (node.id === this.selectedNodeId) {
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = CONFIG.selectedBorderColor;
+        } else {
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = (node.death === undefined) ? CONFIG.aliveBorderColor : CONFIG.deadBorderColor;
+        }
+        ctx.stroke();
+
+        // Image
+        const imgData = this.imageManager.get(node, useHighRes);
+        const imgSize = CONFIG.avatarSize;
+        const imgX = x + (w - imgSize) / 2; // Centered
+        const imgY = y + 15;
+        const radius = imgSize / 2;
+        const centerX = imgX + radius;
+        const centerY = imgY + radius;
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.clip();
+        
+        if (imgData && imgData.loaded) {
+            ctx.drawImage(imgData.img, imgX, imgY, imgSize, imgSize);
+        } else {
+            ctx.fillStyle = "#eee";
+            ctx.fillRect(imgX, imgY, imgSize, imgSize);
+            if (lod === 2) { // Text on placeholder only in high detail
+                ctx.fillStyle = "#aaa";
+                ctx.font = "24px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(node.name.charAt(0), centerX, centerY);
+            }
+        }
+        ctx.restore();
+
+        // Text
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        const textCenterX = x + w / 2;
+        let textY = imgY + imgSize + 15;
+
+        // Name
+        ctx.fillStyle = CONFIG.textColor;
+        ctx.font = CONFIG.fontMain;
+        // Truncate Name
+        const maxWidth = CONFIG.cardWidth - 10;
+        ctx.fillText(this.fitText(ctx, node.name, maxWidth), textCenterX, textY);
+        
+        // --- LOD 2 (High Detail Only) ---
+        if (lod === 2) {
+            // Facebook Icon
+            if (node.fb) {
+                ctx.drawImage(this.imageManager.facebookIcon, x + w - 24, y + 8, 16, 16);
+            }
+
+            textY += 18;
+
+            // Profession
+            if (node.profession) {
+                ctx.fillStyle = "#666";
+                ctx.font = CONFIG.fontSub;
+                // Truncate Profession
+                ctx.fillText(this.fitText(ctx, node.profession, maxWidth), textCenterX, textY);
+                textY += 16;
+            }
+
+            // Dates (Corners)
+            ctx.fillStyle = "#888";
+            ctx.font = CONFIG.fontSmall;
+            const padding = 10;
+            const footerY = y + h - 15;
+
+            // Birth (Bottom Left)
+            if (node.birth) {
+                ctx.textAlign = "left";
+                ctx.fillText(node.birth, x + padding, footerY);
+            }
+
+            // Death (Bottom Right)
+            if (node.death) {
+                ctx.textAlign = "right";
+                ctx.fillText(node.death, x + w - padding, footerY);
+            }
+        }
+    }
+
+    drawConnections(ctx) {
+        const scale = this.transform.k;
+        
+        // Helper: Calculates line width to ensure visibility (min 1px screen space)
+        // while respecting the tree hierarchy thickness
+        const getLineWidth = (baseWidth) => Math.max(baseWidth * scale, 1) / scale;
+
+        ctx.strokeStyle = "#ccc";
+        
+        // 1. Partner connections (Dashed)
+        this.layoutEngine.nodes.forEach(node => {
+            if (node.partnerNode && node.id < node.partnerNode.id) {
+                ctx.save();
+                
+                // Thickness based on depth (slightly thinner than branch)
+                const depth = node.depth || 0;
+                const baseThick = Math.max(1.5, 5 - depth * 0.5); 
+                ctx.lineWidth = getLineWidth(baseThick);
+                
+                // Screen-space constant dash (5px on screen)
+                ctx.setLineDash([6 / scale, 4 / scale]); 
+                
+                ctx.beginPath();
+                const yLevel = node.y + CONFIG.cardHeight * 0.8;
+                const x1 = node.x + CONFIG.cardWidth/2;
+                const x2 = node.partnerNode.x - CONFIG.cardWidth/2;
+                ctx.moveTo(x1, yLevel);
+                ctx.lineTo(x2, yLevel);
+                ctx.stroke();
+                ctx.restore();
             }
         });
-		
-		// Add partner if it exists
-        if (node.pid) {
-			const partnerNode = nodes.find(n => n.id === node.pid); // Find partner
-            if (partnerNode) {
-                nodeElement.setAttribute('data-pid', partnerNode.id); // Set partner ID on current node
-                const partnerElement = document.createElement('div');
-                partnerElement.classList.add('node');
-                partnerElement.setAttribute('data-id', partnerNode.id);
-                partnerElement.setAttribute('data-pid', node.id); // Set mutual partner ID
 
-                partnerElement.innerHTML = nodeInnerHTML(partnerNode);
-				if (partnerNode.death === undefined) {
-					partnerElement.style.borderColor = '#ACE1AF'; // Apply green outline
-				}
+        // 2. Parent-Child connections (Curves)
+        this.layoutEngine.nodes.forEach(node => {
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => {
+                    // Parents
+                    const father = child.fid ? this.layoutEngine.nodes.get(child.fid) : null;
+                    const mother = child.mid ? this.layoutEngine.nodes.get(child.mid) : null;
+                    const hasTwoParents = father && mother;
+                    
+                    // Avoid double drawing
+                    if (hasTwoParents && node.id !== father.id) return;
+                    
+                    // Coordinates
+                    let originX = node.x;
+                    let originY = node.y + CONFIG.cardHeight; 
+                    if (hasTwoParents) {
+                        originX = (father.x + mother.x) / 2;
+                        originY = father.y + CONFIG.cardHeight * 0.8;
+                    }
+                    const destX = child.x;
+                    const destY = child.y;
+                    const midY = (originY + destY) / 2;
+
+                    // Dynamic Thickness based on Child's depth (Branch level)
+                    // Root is 0. Deeper is thinner.
+                    const childDepth = child.depth || 0;
+                    // Formula: Start at 8px, decrease by 0.7 per level, min 1.5px
+                    const thickness = Math.max(1.5, 8 - childDepth * 0.7);
+                    
+                    ctx.lineWidth = getLineWidth(thickness);
+
+                    ctx.beginPath();
+                    ctx.moveTo(originX, originY);
+                    ctx.bezierCurveTo(originX, midY, destX, midY, destX, destY);
+                    ctx.stroke();
+                });
+            }
+        });
+    }
+
+    drawTimeline(ctx, h) {
+        // Calculate levels
+        const levels = {};
+        this.layoutEngine.nodes.forEach(n => {
+                const lvl = Math.round(n.y);
+                if (!levels[lvl]) levels[lvl] = [];
+                if (n.birth && typeof n.birth === 'number') levels[lvl].push(n.birth);
+        });
+
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.font = "bold 12px Arial";
+        
+        Object.keys(levels).forEach(yPos => {
+            const births = levels[yPos];
+            if (births.length > 0) {
+                const avg = Math.round(births.reduce((a,b)=>a+b,0)/births.length);
+                // Calculate screen Y
+                const screenY = (parseInt(yPos) * this.transform.k) + this.transform.y;
                 
-                parentElement.appendChild(partnerElement); // Append partner node
+                if (screenY > 0 && screenY < h) {
+                    ctx.fillText(avg, 20, screenY);
+                    // Draw small tick
+                    ctx.fillRect(10, screenY, 5, 1);
+                }
             }
+        });
+        ctx.restore();
+    }
+}
+
+// Global redraw trigger for image loading
+let appInstance = null;
+function requestRedraw() {
+    if (appInstance) appInstance.requestRender();
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    appInstance = new TreeRenderer('treeCanvas', rawNodes);
+    setupSearch();
+
+    // Check URL for specific node selection (e.g., ?id=28)
+    const params = new URLSearchParams(window.location.search);
+    const idParam = params.get('id');
+    if (idParam) {
+        const nodeId = parseInt(idParam);
+        // Access nodes from the layout engine which uses a Map
+        const node = appInstance.layoutEngine.nodes.get(nodeId);
+        if (node) {
+            appInstance.selectNode(node);
         }
     }
+});
 
-    addNode(nodes[0], tree); // Start with the root node
-}
+function setupSearch() {
+    const input = document.getElementById('searchInput');
+    const resultsContainer = document.getElementById('searchResults');
+    let currentMatches = [];
+    let selectedIndex = 0;
 
-function drawConnections(nodes) {
-	const container = document.querySelector('.tree-container');
-    const svg = document.querySelector('.connections');
-    svg.innerHTML = '';
-
-	// Iterate through all nodes to find their parents
-    nodes.forEach(childNode => {
-        const childElement = document.querySelector(`.node[data-id='${childNode.id}']`);
-        if (!childElement) return; // Skip if the child node is not found
-
-		let fatherElement, motherElement;
-
-		// Check for both parents
-		if (childNode.fid) {
-			const fatherNode = nodes.find(n => n.id === childNode.fid); // Find father //nodes[childNode.fid];
-			if (fatherNode) {
-				fatherElement = document.querySelector(`.node[data-id='${fatherNode.id}']`);
-			}
-		}
-
-		if (childNode.mid) {
-			const motherNode = nodes.find(n => n.id === childNode.mid); // Find Mother nodes[childNode.mid];
-			if (motherNode) {
-				motherElement = document.querySelector(`.node[data-id='${motherNode.id}']`);
-			}
-		}
-
-        // Find parent based on fid or mid
-		if (fatherElement && motherElement) {
-			drawConnectionToParents(fatherElement, motherElement, childElement, container);
-		} else {
-			if (fatherElement) {
-				drawConnectionToParent(fatherElement, childElement, container);
-			}
-			
-			if (motherElement) {
-				drawConnectionToParent(motherElement, childElement, container);
-			}
-		}
-    });
-	
-    nodes.forEach(node => {
-        const parent = document.querySelector(`.node[data-id='${node.id}']`);
-        if (!parent) return; // Skip if the parent is not found
-
-        if (node.pid) {
-			const partnerNode = nodes.find(n => n.id === node.pid); //nodes[node.pid]; // Get partner node
-            if (partnerNode) {
-				const partnerElement = document.querySelector(`.node[data-id='${partnerNode.id}']`);
-                drawConnectionToPartner(parent, partnerElement, container);
-            }
+    function selectResult(node) {
+        const internalNode = appInstance.layoutEngine.nodes.get(node.id);
+        if (internalNode) {
+            appInstance.selectNode(internalNode);
         }
-    });
-}
+        
+        input.value = '';
+        resultsContainer.innerHTML = '';
+        resultsContainer.style.display = 'none';
+    }
 
-function drawConnectionToPartner(fromNode, toNode, container) {
-    const fromRect = fromNode?.getBoundingClientRect();
-    const toRect = toNode?.getBoundingClientRect();
-	
-    if (!fromRect || !toRect) return; // Ensure both nodes exist before drawing
-	
-	const box = container.getBoundingClientRect();
-
-	const startX = fromRect.right - box.left; 
-	const startY = fromRect.top + fromRect.height * 0.8 - box.top;
-	const endX = toRect.left- box.left;
-	const endY = toRect.top + toRect.height * 0.8 - box.top;
-	
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-	path.setAttribute('d', `M${startX} ${startY} L${endX} ${endY}`);
-	path.setAttribute('stroke-dasharray', '5,5');
-	path.setAttribute('stroke-width', '2'); // Set the desired thickness
-    path.setAttribute('stroke', '#ccc');
-    path.setAttribute('fill', 'transparent');
-    document.querySelector('.connections').appendChild(path);
-}
-
-function drawConnectionToParent(fromNode, toNode, container) {
-    const fromRect = fromNode?.getBoundingClientRect();
-    const toRect = toNode?.getBoundingClientRect();
-	
-    if (!fromRect || !toRect) return; // Ensure both nodes exist before drawing
-	
-	const box = container.getBoundingClientRect();
-
-	const startX = fromRect.left + fromRect.width / 2 - box.left; 
-	const startY = fromRect.bottom - box.top;
-	const endX = toRect.left + toRect.width / 2 - box.left;
-	const endY = toRect.top - box.top;
-	
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-	//path.setAttribute('d', `M${startX} ${startY} L${endX} ${endY}`);
-	path.setAttribute('d', `M${startX} ${startY} C${startX} ${(startY + endY) / 2}, ${endX} ${(startY + endY) / 2}, ${endX} ${endY}`);
-	path.setAttribute('stroke-dasharray', '0');
-	path.setAttribute('stroke-width', '2'); // Set the desired thickness
-    path.setAttribute('stroke', '#ccc');
-    path.setAttribute('fill', 'transparent');
-	path.setAttribute('stroke-width', Math.max(1, Math.abs(startY - endY) / 100));
-    document.querySelector('.connections').appendChild(path);
-}
-
-function drawConnectionToParents(parent1, parent2, toNode, container) {
-    const parent1Rect = parent1?.getBoundingClientRect();
-	const parent2Rect = parent2?.getBoundingClientRect();
-    const toRect = toNode?.getBoundingClientRect();
-	
-    if ((!parent1Rect && !parent2Rect) || !toRect) return; // Ensure both nodes exist before drawing
-	
-	const box = container.getBoundingClientRect();
-
-	const startX = (
-		parent1Rect.left + parent1Rect.width / 2 - box.left +
-		parent2Rect.left + parent2Rect.width / 2 - box.left ) / 2; 
-	const startY = (
-		parent1Rect.top + parent1Rect.height * 0.8 - box.top +
-		parent2Rect.top + parent2Rect.height * 0.8 - box.top ) / 2;
-	const middleX = startX;
-	const middleY = parent1Rect.bottom - box.top;
-	
-	const endX = toRect.left + toRect.width / 2 - box.left;
-	const endY = toRect.top - box.top;
-	
-	//console.log(`Start (${startX}, ${startY}), End (${endX}, ${endY})`);
-	
-	const curveWidth = Math.max(1, Math.abs(startY - endY) / 100);
-	const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-	line.setAttribute('d', `M${startX} ${startY} L${middleX} ${middleY}`);
-	line.setAttribute('stroke-dasharray', '0');
-	line.setAttribute('stroke-width', '2'); // Set the desired thickness
-    line.setAttribute('stroke', '#ccc');
-    line.setAttribute('fill', 'transparent');
-	line.setAttribute('stroke-width', curveWidth);
-    document.querySelector('.connections').appendChild(line);
-	
-	
-	const curve = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-	curve.setAttribute('d', `M${middleX} ${middleY} C${middleX} ${(middleY + endY) / 2}, ${endX} ${(middleY + endY) / 2}, ${endX} ${endY}`);
-	curve.setAttribute('stroke-dasharray', '0');
-	curve.setAttribute('stroke-width', '2'); // Set the desired thickness
-    curve.setAttribute('stroke', '#ccc');
-    curve.setAttribute('fill', 'transparent');
-	curve.setAttribute('stroke-width', curveWidth);
-    document.querySelector('.connections').appendChild(curve);
-}
-
-function createTimeLabels(nodes) {
-    const timeline = document.querySelector('.timeline');
-    timeline.innerHTML = ''; // Clear previous labels
-
-    const levelPositions = {};
-
-    nodes.forEach(node => {
-        const nodeElement = document.querySelector(`.node[data-id='${node.id}']`);
-        if (!nodeElement) return;
-
-        const nodeRect = nodeElement.getBoundingClientRect();
-        const levelKey = Math.round(nodeRect.top);
-
-        if (!levelPositions[levelKey]) {
-            levelPositions[levelKey] = [];
-        }
-        if (node.birth !== undefined && typeof node.birth === 'number') {
-            levelPositions[levelKey].push(node.birth); // Only add defined birth years
-        }
-    });
-
-    Object.entries(levelPositions).forEach(([levelKey, births]) => {
-        const topPosition = parseFloat(levelKey);
-
-        if (births.length > 0) {
-            const averageYear = Math.round(births.reduce((sum, year) => sum + year, 0) / births.length);
-
-            const label = document.createElement('div');
-            label.style.position = 'absolute';
-            label.style.top = `${topPosition - 12}px`;
-            label.style.left = '10%';
-            label.style.fontSize = '12px';
-            label.style.color = '#666';
-            label.innerText = averageYear;
+    function renderList() {
+        resultsContainer.innerHTML = '';
+        currentMatches.forEach((node, index) => {
+            const div = document.createElement('div');
+            div.className = `search-result-item${index === selectedIndex ? ' selected' : ''}`;
             
-            timeline.appendChild(label);
+            let imgHtml = `<div class="search-avatar">${node.name[0]}</div>`;
+            if (node.image) {
+                imgHtml = `<img src="${CONFIG.thumbnailPath + node.image}" class="search-avatar" onerror="this.parentElement.innerHTML='<div class=\\'search-avatar\\'>${node.name[0]}</div>'">`;
+            }
+
+            // Add profession if exists
+            const nameDisplay = node.profession ? `${node.name} - ${node.profession}` : node.name;
+
+            div.innerHTML = `
+                ${imgHtml}
+                <div class="search-info">
+                    <span class="search-name">${nameDisplay}</span>
+                    <span class="search-meta">${node.birth || '?'} - ${node.death || '?'}</span>
+                </div>
+            `;
+            
+            div.addEventListener('click', () => selectResult(node));
+            
+            // Mouse enter sets selected index for keyboard continuity
+            div.addEventListener('mouseenter', () => {
+                selectedIndex = index;
+                updateSelection();
+            });
+
+            resultsContainer.appendChild(div);
+        });
+    }
+
+    function updateSelection() {
+        const items = resultsContainer.children;
+        for (let i = 0; i < items.length; i++) {
+            if (i === selectedIndex) items[i].classList.add('selected');
+            else items[i].classList.remove('selected');
+        }
+        
+        // Ensure visible
+        if (items[selectedIndex]) {
+            const item = items[selectedIndex];
+            const containerTop = resultsContainer.scrollTop;
+            const containerBottom = containerTop + resultsContainer.clientHeight;
+            const itemTop = item.offsetTop;
+            const itemBottom = itemTop + item.offsetHeight;
+
+            if (itemTop < containerTop) {
+                resultsContainer.scrollTop = itemTop;
+            } else if (itemBottom > containerBottom) {
+                resultsContainer.scrollTop = itemBottom - resultsContainer.clientHeight;
+            }
+        }
+    }
+
+    input.addEventListener('keydown', (e) => {
+        if (resultsContainer.style.display === 'none') return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedIndex = (selectedIndex + 1) % currentMatches.length;
+            updateSelection();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedIndex = (selectedIndex - 1 + currentMatches.length) % currentMatches.length;
+            updateSelection();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentMatches[selectedIndex]) {
+                selectResult(currentMatches[selectedIndex]);
+            }
+        }
+    });
+
+    input.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        
+        if (query.length < 2) {
+            resultsContainer.style.display = 'none';
+            return;
+        }
+
+        // Filter nodes
+        const matches = rawNodes.filter(node => 
+            node.name.toLowerCase().includes(query)
+        );
+
+        currentMatches = matches.slice(0, 10);
+        selectedIndex = 0; // Reset selection to top
+
+        if (currentMatches.length > 0) {
+            resultsContainer.style.display = 'block';
+            renderList();
+        } else {
+            resultsContainer.style.display = 'none';
+        }
+    });
+
+    // Hide results when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-container')) {
+            resultsContainer.style.display = 'none';
         }
     });
 }
-
-function setupZoomPan(nodes, s, tx, ty) {
-    const container = document.querySelector('.tree-container');
-    const tree = document.querySelector('.tree');
-    const svg = document.querySelector('.connections');
-	
-    let scale = s;
-	let translateX = tx;
-	let translateY = ty;
-
-    let isPanning = false;
-    let startX, startY;
-	let zoomStartDist;
-	let startScale;
-	
-	updateTransform();
-	/*
-	document.querySelectorAll('.node').forEach(node => {
-		node.addEventListener('dblclick', function(event) {
-			event.stopPropagation();
-			const rect = node.getBoundingClientRect();
-			const treeRect = container.getBoundingClientRect();
-
-			// Calculate the center of the node relative to the container
-			const nodeCenterX = rect.left + rect.width / 2;
-			const nodeCenterY = rect.top + rect.height / 2;
-			
-			// Log the calculated center positions
-			console.log(`x: ${translateX}, y: ${translateY}`);
-			
-			console.log(`treeW: ${treeRect.width}`);
-        
-			// Desired zoom scale
-			const newScale = 1.0;//(rect.top - rect.bottom) / window.innerHeight; // Zoom in factor
-			
-			const treeCenterX = translateX + treeRect.width / 2;
-			const treeCenterY = translateY + treeRect.height / 2;
-        
-			// Calculate new translate values, considering the current scale
-			translateX = (treeCenterX - nodeCenterX);// * (newScale/scale);
-			translateY = (treeCenterY - nodeCenterY);// * (newScale/scale);
-
-			scale = newScale;
-
-			// Apply transformation to the entire tree
-			updateTransform();
-			drawConnections(nodes); // Synchronize connections
-			createTimeLabels(nodes);
-		});
-	});*/
-	
-	// Adjust dimensions for interactions
-    container.style.overflow = 'hidden';
-	tree.style.transformOrigin = 'top left';
-    svg.style.transformOrigin = 'top left';
-	
-	function startMoving(e) {
-		isPanning = true;
-        container.style.cursor = 'grabbing';
-        startX = e.clientX - translateX;
-        startY = e.clientY - translateY;
-	}
-	
-	function handleMoving(e) {
-		if (!isPanning) return;
-        translateX = e.clientX - startX;
-        translateY = e.clientY - startY;
-	}
-	
-	function endMoving() {
-		isPanning = false;
-        container.style.cursor = 'grab';
-	}
-	
-	function handleZoom(x, y, newScale) {
-		const rect = container.getBoundingClientRect();
-        const offsetX = x - rect.left;
-        const offsetY = y - rect.top;
-	
-        const scaleRatio = newScale / scale;
-
-        translateX = offsetX - scaleRatio * (offsetX - translateX);
-        translateY = offsetY - scaleRatio * (offsetY - translateY);
-
-        scale = newScale;
-	}
-	
-	document.querySelectorAll('.fb-icon').forEach(fbIcon => {
-		fbIcon.addEventListener('click', (e) => {
-			e.stopPropagation();
-			openFacebookProfile(e.target.dataset.fb);
-		});
-
-		fbIcon.addEventListener('touchstart', (e) => {
-			e.preventDefault();
-			openFacebookProfile(e.target.dataset.fb);
-		}, { passive: false });
-	});
-	
-	function openFacebookProfile(fbuser) {
-		const ending = fbuser.startsWith("profile.php")? "" : "/";
-		const url = `https://www.facebook.com/${fbuser}${ending}`; // Construct the URL
-		window.open(url, '_blank'); // Open in a new tab
-	}
-	
-	container.addEventListener('touchstart', function (e) {
-		e.preventDefault();
-		if (e.touches.length === 1) {
-			startMoving(e.touches[0]);
-			console.log("moving start");
-		} else if (e.touches.length === 2) { // Double-tap for zooming
-			const touch0 = e.touches[0];
-			const touch1 = e.touches[1];
-			const vecX = touch0.clientX - touch1.clientX;
-			const vecY = touch0.clientY - touch1.clientY;
-			zoomStartDist = Math.sqrt(vecX * vecX + vecY * vecY);
-			startScale = scale;
-		}
-    });
-
-    container.addEventListener('mousedown', function (e) {
-		startMoving(e);
-    });
-
-    container.addEventListener('mousemove', function (e) {
-		var flags = e.buttons !== undefined ? e.buttons : e.which;
-		const leftButtonDown = (flags & 1) === 1;
-		if(!leftButtonDown){
-			endMoving();
-		}
-        handleMoving(e);
-        updateTransform();
-		drawConnections(nodes); // Synchronize connections
-		createTimeLabels(nodes);
-    });
-	
-    container.addEventListener('mouseup', function (e) {
-        endMoving();
-    });
-	
-	container.addEventListener('touchend', function (e) {
-		e.preventDefault();
-		if (e.touches.length === 0) {
-			endMoving();
-			console.log("moving end");
-		}
-    });
-
-    container.addEventListener('wheel', function (e) {
-        e.preventDefault();
-		
-		const zoomSpeed = 0.05;
-        const delta = 1.0 - e.deltaY * 0.001;//e.deltaY > 0 ? 1.0 - zoomSpeed : 1.0 + zoomSpeed;
-        const newScale = Math.min(Math.max(0.01, scale * delta), 4);
-		handleZoom(e.clientX, e.clientY, newScale);
-
-        updateTransform();
-		drawConnections(nodes);
-		createTimeLabels(nodes);
-		//console.log("Mouse wheel");
-    });
-	
-	container.addEventListener('touchmove', function (e) {
-		e.preventDefault();
-        if (e.touches.length === 1 && isPanning) {
-			handleMoving(e.touches[0]);
-			console.log("moving");
-		} else if(e.touches.length === 2) {
-			isPanning = false;
-			const touch0 = e.touches[0];
-			const touch1 = e.touches[1];
-			
-			const vecX = touch0.clientX - touch1.clientX;
-			const vecY = touch0.clientY - touch1.clientY;
-			zoomNewtDist = Math.sqrt(vecX * vecX + vecY * vecY);
-			const zoomFactor = zoomNewtDist / zoomStartDist;
-			const zoomX = (touch0.clientX + touch1.clientX) / 2;
-			const zoomY = (touch0.clientY + touch1.clientY) / 2;
-			const newScale = zoomFactor * startScale;
-			
-			console.log(`zoom: ${newScale}`);
-			handleZoom(zoomX, zoomY, newScale);
-		}
-		
-        updateTransform();
-		drawConnections(nodes); // Synchronize connections
-		createTimeLabels(nodes);
-	});
-
-    function updateTransform() {
-        const transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-        tree.style.transform = transform;
-        //svg.style.transform = transform;
-    }
-}
-

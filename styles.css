@@ -1,128 +1,150 @@
-body {
-    font-family: Arial, sans-serif;
+body, html {
     margin: 0;
-    overflow: hidden; /* Prevent scroll bars */
-}
-
-.tree-container {
-    position: relative;
-    padding: 0px;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    cursor: grab;
-	overflow: hidden; /* Ensure no overflow */
-}
-
-.tree {
-    display: flex;
-	flex-direction: row; /* Horizontal layout */
-    justify-content: flex-start;
-    align-items: flex-start;
-    position: relative;
-    padding: 20px;
-	/*transform-origin: top left;*/
-}
-
-.children {
-    display: flex; /* Align children horizontally */
-	flex-direction: column; /* Horizontal layout */
-	justify-content: flex-start; /* Align children within the parent */
-    margin-left: 0px;
-    /*margin-left: 50px;*/
-}
-
-.node {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    margin: 0px;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    width: 150px;
-	height: 200px;
-    align-items: center;
-	box-sizing: border-box;
-	justify-content: space-between;
-	-webkit-user-select: none; /* Safari */
-	-ms-user-select: none; /* IE 10 and IE 11 */
-	user-select: none; /* Standard syntax */
-}
-
-.node img {
-    border-radius: 50%;
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-}
-
-.info {
-	flex: 1; /* Allow the content to stretch */
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* Center content vertically */
-    align-items: center;
-    text-align: center;
-    font-size: 12px;
-}
-
-.node .node-footer {
-    width: 100%; /* Full width for alignment */
-    display: flex;
-    justify-content: space-between; /* Positions content at edges */
-    position: absolute;
-    bottom: 10px; /* Position at the bottom of the node */
-    left: 0;
-    padding: 0 10px; /* Matches node padding */
-    box-sizing: border-box;
-    font-size: 12px;
-}
-
-.node .birth, .node .death {
-    font-size: 12px;
-    color: #666;
-}
-
-.node .fb-icon {
-    position: absolute;
-    top: 8px; /* Adjust this value for vertical placement */
-    right: 8px; /* Adjust this value for horizontal placement */
-    width: 16px; 
-    height: 16px; 
-    cursor: pointer;
-}
-
-.connections {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
+    padding: 0;
     width: 100%;
-	pointer-events: none; /* Ensure no interference with user interactions */
-    z-index: 1;
+    height: 100%;
+    overflow: hidden;
+    background-color: #f5f5f5;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    touch-action: none; /* Prevent browser zooming */
 }
 
-.timeline {
-    position: fixed; /* Keep it fixed to the right side */
-    top: 0;          /* Start from the top */
-    right: 0;        /* Align to the right */
-    width: 45px;    /* Set a width for the vertical timeline */
-    height: 100vh;   /* Full height of the viewport */
-    overflow: hidden; /* Disable vertical scrolling */
-    background-color: white; /* Optional: Background color for visibility */
-    border-left: 1px solid #666; /* Vertical separator */
-    z-index: 10; /* Ensure it's visually above other elements */
+#treeCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+}
+
+#treeCanvas:active {
+    cursor: grabbing;
+}
+
+.controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
     display: flex;
-    flex-direction: column; /* Arrange labels vertically */
-    justify-content: flex-start; /* Align items to the top */
+    gap: 10px;
+    z-index: 100;
 }
 
-
-.timeline div {
-    margin: 10px 0; /* Spacing between time labels */
-    font-size: 12px; /* Font size */
-    color: #666; /* Text color */
+.btn {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 16px;
+    user-select: none;
 }
 
+.btn:hover { background: #f0f0f0; }
+
+.loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: #666;
+    pointer-events: none;
+    transition: opacity 0.5s;
+}
+
+/* Search Styles */
+.search-container {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    z-index: 100;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 30px;
+    font-size: 16px;
+    outline: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.search-input:focus {
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    border-color: #ACE1AF;
+}
+
+.search-results {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    display: none; /* Hidden by default */
+    z-index: 101;
+}
+
+.search-result-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    border-left: 4px solid transparent; /* Reserve space for selection border */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.2s;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover, .search-result-item.selected {
+    background-color: #f9f9f9;
+}
+
+.search-result-item.selected {
+    background-color: #f0f0f0;
+    border-left-color: #ACE1AF;
+}
+
+.search-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #eee;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.search-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-name {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+.search-meta {
+    font-size: 12px;
+    color: #888;
+}
