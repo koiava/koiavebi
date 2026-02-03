@@ -12,17 +12,19 @@ const CONFIG = {
     verticalSpacingIncrement: -80, 
     
     partnerSpacing: 40,   
-    avatarSize: 80, // Slightly larger for better circular crop
+    avatarSize: 80, 
     thumbnailPath: "images/thumbnails/",
-    fullPath: "images/", // Path for high-res images
+    fullPath: "images/", 
     defaultColor: "#fff",
     aliveBorderColor: "#ACE1AF", 
     deadBorderColor: "#ccc",
-    selectedBorderColor: "#FFD700", // Gold for selection
+    selectedBorderColor: "#FFD700", 
     textColor: "#333",
     fontMain: "bold 13px Arial",
     fontSub: "11px Arial",
-    fontSmall: "11px Arial" // Slightly larger for dates
+    fontSmall: "11px Arial",
+    
+    debug: false
 };
 
 // Complete dataset
@@ -517,22 +519,48 @@ class ImageManager {
         const realFb = new Image();
         realFb.onload = () => { this.facebookIcon = realFb; requestRedraw(); };
         realFb.src = 'images/icons/fb.png';
+        
+        // Helper canvas for color extraction
+        this.helperCanvas = document.createElement('canvas');
+        this.helperCanvas.width = 1;
+        this.helperCanvas.height = 1;
+        this.helperCtx = this.helperCanvas.getContext('2d', { willReadFrequently: true }); // Optimization hint
     }
-
+    
+    _computeAverageColor(img) {
+        try {
+            this.helperCtx.clearRect(0, 0, 1, 1);
+            this.helperCtx.drawImage(img, 0, 0, 1, 1);
+            const p = this.helperCtx.getImageData(0, 0, 1, 1).data;
+            // Check if transparency is high (empty image)
+            if (p[3] < 5) return null; 
+            return `rgb(${p[0]},${p[1]},${p[2]})`;
+        } catch(e) {
+            // console.warn("Color extraction failed (likely CORS/file:// restriction):", e);
+            return null;
+        }
+    }
+    
     // Helper to load image
-    _load(src, map, key) {
+    _load(src, map, key, nameForFallback) {
         if (map.has(key)) return map.get(key);
         
-        const imgObj = { img: new Image(), loaded: false, error: false };
+        const imgObj = { img: new Image(), loaded: false, error: false, avgColor: null };
+        // Removed crossOrigin setting to allow local file loading
         imgObj.img.src = src;
+        
         map.set(key, imgObj); // Set immediately to avoid duplicate requests
 
         imgObj.img.onload = () => {
             imgObj.loaded = true;
+            const computed = this._computeAverageColor(imgObj.img);
+            // Use computed if available, otherwise null (gray)
+            imgObj.avgColor = computed;
             requestRedraw();
         };
         imgObj.img.onerror = () => {
             imgObj.error = true;
+            imgObj.avgColor = null; // Ensure we have null (gray) on error
         };
         return imgObj;
     }
@@ -541,11 +569,11 @@ class ImageManager {
         if (!node.image) return null;
 
         // Always ensure thumbnail is available (as fallback or primary)
-        let thumb = this._load(CONFIG.thumbnailPath + node.image, this.thumbnails, node.image);
+        let thumb = this._load(CONFIG.thumbnailPath + node.image, this.thumbnails, node.image, node.name);
 
         if (highQuality) {
             // Try loading full image
-            let full = this._load(CONFIG.fullPath + node.image, this.fullImages, node.image);
+            let full = this._load(CONFIG.fullPath + node.image, this.fullImages, node.image, node.name);
             if (full.loaded) return full;
         }
 
@@ -562,6 +590,7 @@ class TreeLayout {
         this.nodes = new Map(nodes.map(n => [n.id, { ...n, w: CONFIG.cardWidth, h: CONFIG.cardHeight, x: 0, y: 0, children: [] }]));
         this.root = null;
         this.layers = []; // Optimization: Spatial indexing by Y-level (generation)
+        this.bucketSize = 1000; // Spatial bucket size
         this.buildHierarchy();
     }
 
@@ -623,7 +652,7 @@ class TreeLayout {
             // We need to group children who are partners to keep them together
             const childGroups = [];
             let i = 0;
-            
+
             // Sort children by ID to ensure consistent order if needed, or leave as is
             // node.children.sort((a,b) => a.id - b.id); 
 
@@ -645,15 +674,15 @@ class TreeLayout {
 
                 // Recursively layout child
                 let childW = this.calculateSubtree(child, depth + 1, visited);
-                
+
                 // If partner exists in the children list, mark as processed (layout handled in child's partner logic usually?)
                 // Actually, the original logic handles specific pairing in the children loop
                 // In my structure, calculateSubtree handles the node+partner width. 
                 // But we need to make sure we don't process the partner again as a primary child iteration
                 
                 if (partner) {
-                        processedChildren.add(partner.id);
-                        // If the partner was a child of this node (e.g. inter-family marriage?), we skip
+                    processedChildren.add(partner.id);
+                    // If the partner was a child of this node (e.g. inter-family marriage?), we skip
                 }
                 
                 processedChildren.add(child.id);
@@ -723,11 +752,11 @@ class TreeLayout {
             
             // If next child is the partner, we consume it
             if (nextChild && child.pid === nextChild.id) {
-                    visitedChildren.add(nextChild.id);
-                    // Note: The child node itself will handle drawing the partner. 
-                    // But for layout width, we need to know the width of the pair's subtree.
-                    // But 'nextChild' isn't the root of the pair, 'child' is.
-                    // Actually, in the original code, the layout returns width for the pair.
+                visitedChildren.add(nextChild.id);
+                // Note: The child node itself will handle drawing the partner. 
+                // But for layout width, we need to know the width of the pair's subtree.
+                // But 'nextChild' isn't the root of the pair, 'child' is.
+                // Actually, in the original code, the layout returns width for the pair.
             }
 
             const w = this.widths(child);
@@ -760,6 +789,54 @@ class TreeLayout {
         return y;
     }
 
+    addToSpatialIndex(node, depth) {
+        if (!this.layers[depth]) {
+            this.layers[depth] = { 
+                y: node.y, 
+                buckets: new Map(), // Map<bucketIndex, Node[]>
+                allNodes: [] // List of all nodes in this layer for connections
+            };
+        }
+        const layer = this.layers[depth];
+        
+        // Add to bucket
+        const bucketIndex = Math.floor(node.x / this.bucketSize);
+        if (!layer.buckets.has(bucketIndex)) {
+            layer.buckets.set(bucketIndex, []);
+        }
+        layer.buckets.get(bucketIndex).push(node);
+        
+        // Add to flat list for connections
+        layer.allNodes.push(node);
+    }
+
+    getNodesInRect(x, y, width, height) {
+        const results = [];
+        const minBucket = Math.floor(x / this.bucketSize);
+        const maxBucket = Math.floor((x + width) / this.bucketSize);
+
+        // Iterate through all layers first (Vertical culling)
+        this.layers.forEach(layer => {
+            if (!layer) return;
+            // Strict vertical check: if layer is totally above or totally below rect, skip
+            if (layer.y > y + height || layer.y + CONFIG.cardHeight < y) return;
+
+            for (let b = minBucket; b <= maxBucket; b++) {
+                const bucket = layer.buckets.get(b);
+                if (bucket) {
+                    for (const node of bucket) {
+                         // Check exact collision
+                         const hw = CONFIG.cardWidth / 2;
+                         if (node.x + hw >= x && node.x - hw <= x + width) {
+                             results.push(node);
+                         }
+                    }
+                }
+            }
+        });
+        return results;
+    }
+
     assignCoordinates(node, x, depth) {
         if(!node) return;
 
@@ -767,14 +844,6 @@ class TreeLayout {
 
         // Use dynamic Y calculation
         node.y = this.getYForDepth(depth);
-        
-        // Add to layer for efficient culling
-        if (!this.layers[depth]) this.layers[depth] = { y: node.y, nodes: new Set() };
-        this.layers[depth].nodes.add(node);
-        
-        // Center the node itself within its allocated tree width
-        // The allocated width is centered at x
-        // node is centered at x
         
         const hasPartner = !!node.partnerNode;
         const blockWidth = hasPartner ? (CONFIG.cardWidth * 2 + CONFIG.partnerSpacing) : CONFIG.cardWidth;
@@ -787,14 +856,17 @@ class TreeLayout {
             node.partnerNode.x = node.x + CONFIG.cardWidth + CONFIG.partnerSpacing;
             node.partnerNode.y = node.y;
             
-            // Add partner to layer
-            this.layers[depth].nodes.add(node.partnerNode);
+            // Add partner to spatial index bucket
+            this.addToSpatialIndex(node.partnerNode, depth);
         } else {
             node.x = x;
         }
 
+        // Add node to spatial index bucket AFTER X is determined
+        this.addToSpatialIndex(node, depth);
+
         if (node._childGroups && node._childGroups.length > 0) {
-            let currentX = x - (node._childrenTotalWidth / 2); // Start left edge of children area
+            let currentX = x - (node._childrenTotalWidth / 2); 
             
             node._childGroups.forEach(group => {
                 const childCenter = currentX + (group.width / 2);
@@ -843,7 +915,7 @@ class TreeRenderer {
         this.layoutEngine.layout();
         this.bindEvents();
         this.resize();
-        
+
         // Initial fit to screen will happen in DOMContentLoaded if no ID param is present
         // But resize() also calls requestRender.
         // We will call fitToScreen inside DOMContentLoaded check logic.
@@ -872,11 +944,7 @@ class TreeRenderer {
         this.transform.k = scale;
 
         // Center view
-        // x = (ScreenW - TreeW * s) / 2 - MinX * s
         this.transform.x = (width - bounds.width * scale) / 2 - bounds.minX * scale;
-        
-        // For Y, centering vertically often puts the root too low if the tree is triangular. 
-        // But for "center in the middle" request, vertical centering is the literal interpretation.
         this.transform.y = (height - bounds.height * scale) / 2 - bounds.minY * scale;
 
         // Ensure we request a render
@@ -1005,9 +1073,12 @@ class TreeRenderer {
 
         const pos = this.screenToWorld(sx, sy);
         let cursor = 'grab';
-        let hovered = null;
         
-        for (const node of this.layoutEngine.nodes.values()) {
+        // Optimized Hit Test: Use spatial index instead of iterating all nodes
+        const candidates = this.layoutEngine.getNodesInRect(pos.x, pos.y, 1, 1); // 1x1 rect for point
+        let hovered = null;
+
+        for (const node of candidates) {
             const hw = CONFIG.cardWidth / 2;
             // Check bounds of card
             if (pos.x >= node.x - hw && pos.x <= node.x + hw &&
@@ -1016,9 +1087,6 @@ class TreeRenderer {
                 hovered = node;
 
                 if (node.fb) {
-                    // Hit test FB icon (top right corner logic)
-                    // Drawn at x + w - 24, y + 8 (relative to top-left of card)
-                    // Top-left of card is node.x - hw, node.y
                     const cardLeft = node.x - hw;
                     const iconX = cardLeft + CONFIG.cardWidth - 24;
                     const iconY = node.y + 8;
@@ -1082,10 +1150,12 @@ class TreeRenderer {
     handleDoubleClick(e) {
         const pos = this.screenToWorld(e.clientX, e.clientY);
         let clickedNode = null;
+        
+        // Optimized Hit Test
+        const candidates = this.layoutEngine.getNodesInRect(pos.x, pos.y, 1, 1);
 
-        for (const node of this.layoutEngine.nodes.values()) {
+        for (const node of candidates) {
             const hw = CONFIG.cardWidth / 2;
-            // Check bounds of card
             if (pos.x >= node.x - hw && pos.x <= node.x + hw &&
                 pos.y >= node.y && pos.y <= node.y + CONFIG.cardHeight) {
                 clickedNode = node;
@@ -1132,15 +1202,16 @@ class TreeRenderer {
 
         const pos = this.screenToWorld(e.clientX, e.clientY);
         
-        // Hit test nodes
-        for (const node of this.layoutEngine.nodes.values()) {
+        // Optimized Hit Test
+        const candidates = this.layoutEngine.getNodesInRect(pos.x, pos.y, 1, 1);
+        
+        for (const node of candidates) {
             const hw = CONFIG.cardWidth / 2;
             if (pos.x >= node.x - hw && pos.x <= node.x + hw &&
                 pos.y >= node.y && pos.y <= node.y + CONFIG.cardHeight) {
                 
                 // Clicked a node
                 if (node.fb) {
-                        // Hit test FB icon (top right corner logic)
                         const cardLeft = node.x - hw;
                         const iconX = cardLeft + CONFIG.cardWidth - 24;
                         const iconY = node.y + 8;
@@ -1173,13 +1244,17 @@ class TreeRenderer {
         const ctx = this.ctx;
         const width = this.canvas.width / (window.devicePixelRatio||1);
         const height = this.canvas.height / (window.devicePixelRatio||1);
+        
+        const tStart = performance.now();
 
         // Clear
         ctx.fillStyle = "#f5f5f5";
         ctx.fillRect(0, 0, width, height);
+        const tClear = performance.now();
 
         // Draw Timeline (Static on left)
         this.drawTimeline(ctx, height);
+        const tTimeline = performance.now();
 
         // Setup Transform
         ctx.save();
@@ -1188,17 +1263,82 @@ class TreeRenderer {
 
         // Draw Connections First
         this.drawConnections(ctx);
+        const tConnections = performance.now();
 
         // Draw Nodes
         this.drawNodes(ctx);
+        const tNodes = performance.now();
 
         ctx.restore();
 
         // Draw Tooltip (Screen Space, after restore)
         this.drawTooltip(ctx);
+        const tEnd = performance.now();
+
+        if (CONFIG.debug) {
+            this.drawDebugInfo(ctx, {
+                'Clear': tClear - tStart,
+                'Timeline': tTimeline - tClear,
+                'Connections': tConnections - tTimeline,
+                'Nodes': tNodes - tConnections,
+                'Tooltip': tEnd - tNodes,
+                'Total Frame': tEnd - tStart
+            });
+        }
+    }
+
+    drawDebugInfo(ctx, metrics) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform for UI
+        
+        // Background
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillRect(10, 10, 200, 150);
+        
+        // Text
+        ctx.fillStyle = "#0f0";
+        ctx.font = "12px monospace";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        
+        let y = 20;
+        ctx.fillText("Performance (ms)", 20, y);
+        y += 20;
+        
+        for (const [label, time] of Object.entries(metrics)) {
+            ctx.fillStyle = label === 'Total Frame' ? '#fff' : '#0f0';
+            ctx.fillText(`${label}: ${time.toFixed(2)}`, 20, y);
+            y += 15;
+        }
+        
+        ctx.restore();
+    }
+    
+    // In TreeRenderer class
+    getFittedText(ctx, node, type, text, maxWidth) {
+        // Simple in-memory cache on the node object itself
+        const cacheKey = `_fit_${type}`;
+        if (node[cacheKey] !== undefined) return node[cacheKey];
+
+        let width = ctx.measureText(text).width;
+        let result = text;
+        if (width > maxWidth) {
+            let ellipsis = '...';
+            let truncated = text;
+            while (ctx.measureText(truncated + ellipsis).width > maxWidth && truncated.length > 0) {
+                truncated = truncated.slice(0, -1);
+            }
+            result = truncated + ellipsis;
+        }
+        node[cacheKey] = result;
+        return result;
     }
 
     fitText(ctx, text, maxWidth) {
+        // Fallback for non-node text if needed, or redirect
+        // For this specific usage in drawSingleNode, we should use getFittedText
+        // But for compatibility with existing calls, we keep this slow version or refactor calls.
+        // Let's keep this as utility but use cached version in drawSingleNode.
         let width = ctx.measureText(text).width;
         if (width <= maxWidth) return text;
         
@@ -1274,34 +1414,41 @@ class TreeRenderer {
         
         // Determine LOD Level
         let lod = 2; // High
-        if (scale < 0.2) lod = 0; // Low (Box)
-        else if (scale < 0.6) lod = 1; // Medium (No shadow/dates)
+        if (scale < 0.1) lod = 0; // Low (Box) - Changed from 0.2
+        else if (scale < 0.3) lod = 1; // Medium (No shadow/dates) - Changed from 0.6
 
         // High-res threshold (only load when really close)
         const useHighRes = scale > 1.2;
 
-        // Culling: Only draw visible layers
+        // Culling: Only draw visible layers and visible buckets
         const viewL = -this.transform.x / scale;
         const viewT = -this.transform.y / scale;
-        const viewR = viewL + (this.canvas.width/window.devicePixelRatio) / scale;
-        const viewB = viewT + (this.canvas.height/window.devicePixelRatio) / scale;
+        const viewW = this.canvas.width / (window.devicePixelRatio||1) / scale;
+        const viewH = this.canvas.height / (window.devicePixelRatio||1) / scale;
+        const viewR = viewL + viewW;
+        const viewB = viewT + viewH;
 
-        // Optimization: Iterate layers instead of all nodes
-        // Assuming layers are mostly sorted by Y, we could optimize this loop further,
-        // but checking ~20 layers is extremely fast.
+        // Bucket Range
+        const minBucket = Math.floor((viewL - CONFIG.cardWidth) / this.layoutEngine.bucketSize);
+        const maxBucket = Math.floor((viewR + CONFIG.cardWidth) / this.layoutEngine.bucketSize);
+
         this.layoutEngine.layers.forEach(layer => {
             if (!layer) return;
-            
-            // Check if entire layer is vertical visible
+            // Vertical Culling
             if (layer.y + CONFIG.cardHeight < viewT || layer.y > viewB) return;
 
-            // Iterate nodes in this visible layer
-            layer.nodes.forEach(node => {
-                // Horizontal culling
-                if (node.x + halfW < viewL || node.x - halfW > viewR) return;
+            // Iterate only visible buckets
+            for (let b = minBucket; b <= maxBucket; b++) {
+                const bucket = layer.buckets.get(b);
+                if (!bucket) continue;
 
-                this.drawSingleNode(ctx, node, lod, useHighRes);
-            });
+                for (const node of bucket) {
+                    // Fine-grained Horizontal Culling
+                    if (node.x + halfW < viewL || node.x - halfW > viewR) continue;
+
+                    this.drawSingleNode(ctx, node, lod, useHighRes);
+                }
+            }
         });
     }
 
@@ -1312,26 +1459,7 @@ class TreeRenderer {
         const h = CONFIG.cardHeight;
         const r = 8; // border radius
 
-        // --- LOD 0 (Low Detail - Zoomed Out) ---
-        if (lod === 0) {
-            ctx.fillStyle = CONFIG.defaultColor;
-            // Simple box
-            ctx.fillRect(x, y, w, h);
-            
-            // Border color indicates status
-            ctx.lineWidth = 4; // Thicker border to be visible
-            if (node.id === this.selectedNodeId) {
-                ctx.strokeStyle = CONFIG.selectedBorderColor;
-            } else {
-                ctx.strokeStyle = (node.death === undefined) ? CONFIG.aliveBorderColor : CONFIG.deadBorderColor;
-            }
-            ctx.strokeRect(x, y, w, h);
-            return;
-        }
-
-        // --- LOD 1 & 2 (Medium & High) ---
-        
-        // Card Background
+        // Common: Background & Border
         ctx.fillStyle = CONFIG.defaultColor;
         
         // Shadow only on High LOD
@@ -1356,14 +1484,60 @@ class TreeRenderer {
         }
         ctx.stroke();
 
-        // Image
-        const imgData = this.imageManager.get(node, useHighRes);
+        // Geometry calculations for content
         const imgSize = CONFIG.avatarSize;
-        const imgX = x + (w - imgSize) / 2; // Centered
+        const imgX = x + (w - imgSize) / 2; 
         const imgY = y + 15;
         const radius = imgSize / 2;
         const centerX = imgX + radius;
         const centerY = imgY + radius;
+
+        // --- LOD < 2 (Abstract View) ---
+        if (lod < 2) {
+            // 1. Avatar Circle (Grey OR AvgColor)
+            const imgData = this.imageManager.get(node, false);
+            // Use average color if available, otherwise fallback to grey
+            ctx.fillStyle = (imgData && imgData.avgColor) ? imgData.avgColor : "#e0e0e0";
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 2. FB Dot (Blue)
+            if (node.fb) {
+                 ctx.fillStyle = "#1877F2";
+                 ctx.beginPath();
+                 ctx.arc(x + w - 20, y + 20, 6, 0, Math.PI * 2); 
+                 ctx.fill();
+            }
+
+            // 3. Text Lines
+            const textCenterX = x + w / 2;
+            let textY = imgY + imgSize + 20;
+            
+            // Name Line
+            ctx.fillStyle = "#d0d0d0";
+            const nameWidth = 80;
+            ctx.beginPath();
+            ctx.roundRect(textCenterX - nameWidth/2, textY, nameWidth, 12, 4);
+            ctx.fill();
+            
+            // Profession Line
+            if (node.profession) {
+                ctx.fillStyle = "#e8e8e8";
+                const profWidth = 60;
+                ctx.beginPath();
+                ctx.roundRect(textCenterX - profWidth/2, textY + 18, profWidth, 10, 4);
+                ctx.fill();
+            }
+            
+            return;
+        }
+
+        // --- LOD 2 (High Detail) ---
+        
+        // Image
+        const imgData = this.imageManager.get(node, useHighRes);
         
         ctx.save();
         ctx.beginPath();
@@ -1375,13 +1549,11 @@ class TreeRenderer {
         } else {
             ctx.fillStyle = "#eee";
             ctx.fillRect(imgX, imgY, imgSize, imgSize);
-            if (lod === 2) { // Text on placeholder only in high detail
-                ctx.fillStyle = "#aaa";
-                ctx.font = "24px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(node.name.charAt(0), centerX, centerY);
-            }
+            ctx.fillStyle = "#aaa";
+            ctx.font = "24px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(node.name.charAt(0), centerX, centerY);
         }
         ctx.restore();
 
@@ -1394,118 +1566,116 @@ class TreeRenderer {
         // Name
         ctx.fillStyle = CONFIG.textColor;
         ctx.font = CONFIG.fontMain;
-        // Truncate Name
+        // Truncate Name using Cached Version
         const maxWidth = CONFIG.cardWidth - 10;
-        ctx.fillText(this.fitText(ctx, node.name, maxWidth), textCenterX, textY);
+        ctx.fillText(this.getFittedText(ctx, node, 'name', node.name, maxWidth), textCenterX, textY);
         
-        // --- LOD 2 (High Detail Only) ---
-        if (lod === 2) {
-            // Facebook Icon
-            if (node.fb) {
-                ctx.drawImage(this.imageManager.facebookIcon, x + w - 24, y + 8, 16, 16);
-            }
+        // Facebook Icon
+        if (node.fb) {
+            ctx.drawImage(this.imageManager.facebookIcon, x + w - 24, y + 8, 16, 16);
+        }
 
-            textY += 18;
+        textY += 18;
 
-            // Profession
-            if (node.profession) {
-                ctx.fillStyle = "#666";
-                ctx.font = CONFIG.fontSub;
-                // Truncate Profession
-                ctx.fillText(this.fitText(ctx, node.profession, maxWidth), textCenterX, textY);
-                textY += 16;
-            }
+        // Profession
+        if (node.profession) {
+            ctx.fillStyle = "#666";
+            ctx.font = CONFIG.fontSub;
+            // Truncate Profession using Cached Version
+            ctx.fillText(this.getFittedText(ctx, node, 'prof', node.profession, maxWidth), textCenterX, textY);
+            textY += 16;
+        }
 
-            // Dates (Corners)
-            ctx.fillStyle = "#888";
-            ctx.font = CONFIG.fontSmall;
-            const padding = 10;
-            const footerY = y + h - 15;
+        // Dates (Corners)
+        ctx.fillStyle = "#888";
+        ctx.font = CONFIG.fontSmall;
+        const padding = 10;
+        const footerY = y + h - 15;
 
-            // Birth (Bottom Left)
-            if (node.birth) {
-                ctx.textAlign = "left";
-                ctx.fillText(node.birth, x + padding, footerY);
-            }
+        // Birth (Bottom Left)
+        if (node.birth) {
+            ctx.textAlign = "left";
+            ctx.fillText(node.birth, x + padding, footerY);
+        }
 
-            // Death (Bottom Right)
-            if (node.death) {
-                ctx.textAlign = "right";
-                ctx.fillText(node.death, x + w - padding, footerY);
-            }
+        // Death (Bottom Right)
+        if (node.death) {
+            ctx.textAlign = "right";
+            ctx.fillText(node.death, x + w - padding, footerY);
         }
     }
 
     drawConnections(ctx) {
         const scale = this.transform.k;
-        
-        // Helper: Calculates line width to ensure visibility (min 1px screen space)
-        // while respecting the tree hierarchy thickness
         const getLineWidth = (baseWidth) => Math.max(baseWidth * scale, 1) / scale;
-
-        ctx.strokeStyle = "#ccc";
         
-        // 1. Partner connections (Dashed)
-        this.layoutEngine.nodes.forEach(node => {
-            if (node.partnerNode && node.id < node.partnerNode.id) {
-                ctx.save();
-                
-                // Thickness based on depth (slightly thinner than branch)
-                const depth = node.depth || 0;
-                const baseThick = Math.max(1.5, 5 - depth * 0.5); 
-                ctx.lineWidth = getLineWidth(baseThick);
-                
-                // Screen-space constant dash (5px on screen)
-                ctx.setLineDash([6 / scale, 4 / scale]); 
-                
-                ctx.beginPath();
-                const yLevel = node.y + CONFIG.cardHeight * 0.8;
-                const x1 = node.x + CONFIG.cardWidth/2;
-                const x2 = node.partnerNode.x - CONFIG.cardWidth/2;
-                ctx.moveTo(x1, yLevel);
-                ctx.lineTo(x2, yLevel);
-                ctx.stroke();
-                ctx.restore();
-            }
-        });
+        ctx.strokeStyle = "#ccc";
 
-        // 2. Parent-Child connections (Curves)
-        this.layoutEngine.nodes.forEach(node => {
-            if (node.children && node.children.length > 0) {
-                node.children.forEach(child => {
-                    // Parents
-                    const father = child.fid ? this.layoutEngine.nodes.get(child.fid) : null;
-                    const mother = child.mid ? this.layoutEngine.nodes.get(child.mid) : null;
-                    const hasTwoParents = father && mother;
-                    
-                    // Avoid double drawing
-                    if (hasTwoParents && node.id !== father.id) return;
-                    
-                    // Coordinates
-                    let originX = node.x;
-                    let originY = node.y + CONFIG.cardHeight; 
-                    if (hasTwoParents) {
-                        originX = (father.x + mother.x) / 2;
-                        originY = father.y + CONFIG.cardHeight * 0.8;
-                    }
-                    const destX = child.x;
-                    const destY = child.y;
-                    const midY = (originY + destY) / 2;
+        // View bounds for connection culling
+        const viewT = -this.transform.y / scale;
+        const viewH = this.canvas.height / (window.devicePixelRatio||1) / scale;
+        const viewB = viewT + viewH;
+        
+        // Iterate visible vertical layers for connections.
+        // We removed horizontal bucket culling to ensure long connections are drawn.
+        this.layoutEngine.layers.forEach((layer, depth) => {
+             if (!layer) return;
+             // Check if layer or the one below it is visible (since connections go down)
+             const nextLayerY = this.layoutEngine.getYForDepth(depth + 1);
+             if (nextLayerY < viewT || layer.y > viewB) return;
 
-                    // Dynamic Thickness based on Child's depth (Branch level)
-                    // Root is 0. Deeper is thinner.
-                    const childDepth = child.depth || 0;
-                    // Formula: Start at 8px, decrease by 0.7 per level, min 1.5px
-                    const thickness = Math.max(1.5, 8 - childDepth * 0.7);
-                    
-                    ctx.lineWidth = getLineWidth(thickness);
+             // Iterate ALL nodes in this visible layer to ensure connections are drawn
+             // even if parent is horizontally off-screen
+             for (const node of layer.allNodes) {
+                 // 1. Partner connections
+                 if (node.partnerNode && node.id < node.partnerNode.id) {
+                     ctx.save();
+                     const nodeDepth = node.depth || 0;
+                     const baseThick = Math.max(1.5, 5 - nodeDepth * 0.5); 
+                     ctx.lineWidth = getLineWidth(baseThick);
+                     ctx.setLineDash([6 / scale, 4 / scale]); 
+                     
+                     ctx.beginPath();
+                     const yLevel = node.y + CONFIG.cardHeight * 0.8;
+                     const x1 = node.x + CONFIG.cardWidth/2;
+                     const x2 = node.partnerNode.x - CONFIG.cardWidth/2;
+                     ctx.moveTo(x1, yLevel);
+                     ctx.lineTo(x2, yLevel);
+                     ctx.stroke();
+                     ctx.restore();
+                 }
 
-                    ctx.beginPath();
-                    ctx.moveTo(originX, originY);
-                    ctx.bezierCurveTo(originX, midY, destX, midY, destX, destY);
-                    ctx.stroke();
-                });
-            }
+                 // 2. Children connections
+                 if (node.children && node.children.length > 0) {
+                     node.children.forEach(child => {
+                         const father = child.fid ? this.layoutEngine.nodes.get(child.fid) : null;
+                         const mother = child.mid ? this.layoutEngine.nodes.get(child.mid) : null;
+                         const hasTwoParents = father && mother;
+                         
+                         if (hasTwoParents && node.id !== father.id) return;
+                         
+                         let originX = node.x;
+                         let originY = node.y + CONFIG.cardHeight; 
+                         if (hasTwoParents) {
+                             originX = (father.x + mother.x) / 2;
+                             originY = father.y + CONFIG.cardHeight * 0.8;
+                         }
+                         const destX = child.x;
+                         const destY = child.y;
+                         const midY = (originY + destY) / 2;
+
+                         const childDepth = child.depth || 0;
+                         const thickness = Math.max(1.5, 8 - childDepth * 0.7);
+                         
+                         ctx.lineWidth = getLineWidth(thickness);
+
+                         ctx.beginPath();
+                         ctx.moveTo(originX, originY);
+                         ctx.bezierCurveTo(originX, midY, destX, midY, destX, destY);
+                         ctx.stroke();
+                     });
+                 }
+             }
         });
     }
 
