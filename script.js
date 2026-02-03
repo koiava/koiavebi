@@ -834,23 +834,53 @@ class TreeRenderer {
         this.transform = { x: 0, y: 0, k: 0.8 }; // Initial zoom
         this.isDragging = false;
         this.lastPos = { x: 0, y: 0 };
+        this.lastPinchDist = 0; // Track pinch distance
         
         this.init();
     }
 
     init() {
         this.layoutEngine.layout();
-        
-        // Center initial view
-        const bounds = this.layoutEngine.getBounds();
-        this.transform.x = (window.innerWidth - bounds.width * this.transform.k) / 2 - bounds.minX * this.transform.k;
-        this.transform.y = 100;
-
         this.bindEvents();
         this.resize();
-        requestAnimationFrame(() => this.loop());
         
+        // Initial fit to screen will happen in DOMContentLoaded if no ID param is present
+        // But resize() also calls requestRender.
+        // We will call fitToScreen inside DOMContentLoaded check logic.
+        
+        requestAnimationFrame(() => this.loop());
         document.getElementById('loading').style.opacity = 0;
+    }
+    
+    fitToScreen() {
+        const bounds = this.layoutEngine.getBounds();
+        // Get logical CSS pixels
+        const width = this.canvas.width / (window.devicePixelRatio || 1);
+        const height = this.canvas.height / (window.devicePixelRatio || 1);
+        const padding = 60; // Space around edges
+
+        // Calculate ratios
+        const scaleX = (width - padding * 2) / bounds.width;
+        const scaleY = (height - padding * 2) / bounds.height;
+        
+        // Choose the smaller scale to fit both dimensions
+        // Cap at 1.0 so small trees don't look weirdly huge
+        // Lower bound set by logic or min zoom
+        let scale = Math.min(scaleX, scaleY);
+        scale = Math.min(scale, 1.0); 
+
+        this.transform.k = scale;
+
+        // Center view
+        // x = (ScreenW - TreeW * s) / 2 - MinX * s
+        this.transform.x = (width - bounds.width * scale) / 2 - bounds.minX * scale;
+        
+        // For Y, centering vertically often puts the root too low if the tree is triangular. 
+        // But for "center in the middle" request, vertical centering is the literal interpretation.
+        this.transform.y = (height - bounds.height * scale) / 2 - bounds.minY * scale;
+
+        // Ensure we request a render
+        this.requestRender();
     }
 
     bindEvents() {
@@ -876,22 +906,67 @@ class TreeRenderer {
                 this.startDrag(e.touches[0].clientX, e.touches[0].clientY);
                 // Check click
                 this.handleTap(e.touches[0].clientX, e.touches[0].clientY);
+            } else if (e.touches.length === 2) {
+                this.isDragging = false; // Prevent single finger drag conflicts
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                this.lastPinchDist = Math.sqrt(dx * dx + dy * dy);
+                // Set center for panning
+                this.lastPos = {
+                    x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                    y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+                };
             }
         }, {passive: false});
         
         c.addEventListener('touchmove', e => {
             e.preventDefault(); 
-            if(e.touches.length === 1) this.drag(e.touches[0].clientX, e.touches[0].clientY);
+            if(e.touches.length === 1 && this.isDragging) {
+                this.drag(e.touches[0].clientX, e.touches[0].clientY);
+            } else if (e.touches.length === 2) {
+                const t1 = e.touches[0];
+                const t2 = e.touches[1];
+                const currentX = (t1.clientX + t2.clientX) / 2;
+                const currentY = (t1.clientY + t2.clientY) / 2;
+                
+                // Pan
+                const dx = currentX - this.lastPos.x;
+                const dy = currentY - this.lastPos.y;
+                this.transform.x += dx;
+                this.transform.y += dy;
+                
+                // Zoom
+                const dist = Math.sqrt(Math.pow(t1.clientX - t2.clientX, 2) + Math.pow(t1.clientY - t2.clientY, 2));
+                if (this.lastPinchDist > 0) {
+                    const scale = dist / this.lastPinchDist;
+                    const newK = Math.min(Math.max(0.02, this.transform.k * scale), 5);
+                    
+                    // Zoom towards center
+                    const ratio = newK / this.transform.k;
+                    this.transform.x = currentX - (currentX - this.transform.x) * ratio;
+                    this.transform.y = currentY - (currentY - this.transform.y) * ratio;
+                    this.transform.k = newK;
+                }
+                
+                this.lastPos = { x: currentX, y: currentY };
+                this.lastPinchDist = dist;
+                this.requestRender();
+            }
         }, {passive: false});
         
-        c.addEventListener('touchend', () => this.endDrag());
+        c.addEventListener('touchend', e => {
+            this.endDrag();
+            this.lastPinchDist = 0;
+            if (e.touches.length === 1) {
+                 this.startDrag(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        });
 
         // Click detection
         c.addEventListener('click', e => this.handleClick(e));
 
         document.getElementById('btnRecenter').addEventListener('click', () => {
-                this.transform = { x: 100, y: 100, k: 0.8 };
-                this.requestRender();
+                this.fitToScreen();
         });
     }
 
@@ -1486,6 +1561,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (node) {
             appInstance.selectNode(node);
         }
+    } else {
+        // Only fit to screen if no ID is provided
+        appInstance.fitToScreen();
     }
 });
 
