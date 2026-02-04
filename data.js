@@ -164,7 +164,7 @@ const rawNodes = [
 		{ id: 121, name: "ანა", mid: 136, fid: 57 },
 		{ id: 122, name: "მარო პერტია"},
 		{ id: 123, name: "რაულ ფანცულაია", death: '????'},
-		{ id: 124, name: "მერი ნიკურაძე", image: "meri_nikuradze.jpg" },
+		{ id: 124, name: "მერი ნიკურაძე", birth: 1932, image: "meri_nikuradze.jpg" },
 		{ id: 125, name: "ზაალი შარაშენიძე", death: '????', image: "zaali_sharashenidze.jpg" },
 		{ id: 126, name: "ჯუმბერი კიკაჩეიშვილი", image: "jumberi_kikacheishvili.jpg" },
 		{ id: 127, name: "ნანული გაბელაია", birth: 1955, fb: "nanuli.gabelaia.5", image: "nanuli_gabelaia.jpg" },
