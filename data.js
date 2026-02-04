@@ -319,7 +319,7 @@ const rawNodes = [
 		{ id: 398, name: "სოსო", birth: 1971, death: 1994, fid: 394, image: "soso.jpg" },
 		{ id: 399, name: "ალექსანდრე", birth: 1961, fb: "alexandre.koiava.5", pid: 420, fid: 395, mid: 413, profession: "ექიმი", image: "aleksandre.jpg" },
 		{ id: 400, name: "ნინო", fb: "nino.koiava.7", fid: 395, mid: 413, pid: 412, image: "nino_2.jpg" },
-		{ id: 401, name: "ელენე", fb: "elene.qoiava", pid: 416, fid: 397, mid: 417, image: "elene_2.jpg" },
+		{ id: 401, name: "ელენე", fb: "elene.qoiava", birth: 1991, pid: 416, fid: 397, mid: 417, image: "elene_2.jpg" },
 		{ id: 402, name: "ლიზა", fb: "liza.qoiava", fid: 397, mid: 417, image: "liza.jpg" },
 		{ id: 403, fid: 399, mid: 420, name: "ტატიანა", image: "tatiana.jpg" },
 		{ id: 404, fid: 399, mid: 420, name: "დავითი", fb: "datuna.koiava", pid: 414, image: "datuna.jpg" },
