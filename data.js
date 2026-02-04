@@ -79,7 +79,7 @@ const rawNodes = [
 		{ id:  34, name: "ირმა", birth: 1964, fb: "irma.koiava.9", pid: 210, fid: 22, mid: 203, profession: "ექიმ-ლაბორანტი", image: "irma.jpg" },
 		{ id: 210, name: "გულადი", lastname: "ხურცილავა", birth: 1962, fb: "profile.php?id=100089396543874", image: "guladi_khurtsilava.jpg" },
 		{ id:  35, name: "ლევანი", birth: 1977, fb: "levani.qoiava.5", prevpids: [208], fid: 33, mid:207, image: "levani.jpg" },
-		{ id: 208, name: "ელენე", lastname: "მელაძე", birth: 1991, fb: "meladzeelene", profession: "მასწავლებელი", image: "elene_meladze.jpg" },
+		{ id: 208, name: "ელენე", lastname: "მელაძე", birth: 1991, profession: "მასწავლებელი", image: "elene_meladze.jpg" },
 		{ id:  36, name: "ლადო", birth: 1981, fb: "lado.qoiava", pid: 209, fid: 33, mid:207, image: "lado.jpg" },
 		{ id: 209, name: "თაკო", lastname: "სახურია", birth: 1992, fb: "takosaxuria", profession: "ფარმაცევტი", image: "tako_sakhuria.jpg" },
 		{ id:  37, name: "სალომე", birth: 2004, fb: "qoiavasalome", fid: 26, mid: 204, profession: "იურისტი", image: "salome.jpg" },
