@@ -364,7 +364,7 @@ const rawNodes = [
 		{ id: 443, name: "ლაურა", lastname: "კახიძე", birth: 1935, profession: "ინჟინერ-ფეიქარი", image: "laura_kakhidze.jpg" },
 		{ id: 444, name: "ალექსანდრა", lastname: "დუნდუა", death: '19??' },
 		{ id: 445, name: "ლუდმილა", death: '19??' },
-		{ id: 446, name: "ლიანა", lastname: "კახიძე", death: '19??' },
+		{ id: 446, name: "ლიანა", lastname: "კახიძე", death: '19??', image: "liana_kakhidze.jpg" },
 		{ id: 447, name: "კატია", lastname: "ოგონიოკი", birth: 1977, death: 2007, image: "katya_ogonek.jpg" },
 		
 		
