@@ -291,7 +291,7 @@ const rawNodes = [
 		{ id: 369, name: "ჯემალი", fid: 360, mid: 444, death: '19??', image: "jemali.jpg", pid: 445 },
 		{ id: 370, fid: 361, name: "მერი" },
 		{ id: 371, name: "ციალა", death: 2015, fid: 362, mid: 433, pid: 431, profession: "პედიატრი", image: "ciala.jpg" },
-		{ id: 372, name: "ლერი", fid: 362, mid: 433 },
+		{ id: 372, name: "ლერი", fid: 362, mid: 433, image: "leri.jpg" },
 		{ id: 373, fid: 372, name: "ლიზიკო", fb: "liziko.koiava", image: "liziko.jpg" },
 		{ id: 374, fid: 372, name: "ნათია", fb: "natia.koiava", image: "natia_3.jpg" },
 		{ id: 375, fid: 372, name: "ანი", image: "ani.jpg" },
