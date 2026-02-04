@@ -119,8 +119,26 @@ class TreeLayout {
     buildHierarchy() {
         // Link partners and children
         this.nodes.forEach(node => {
+            // Initialize partners array to handle multiple partners
+            node.partners = [];
+
+            // 1. Current Partner (pid)
             if (node.pid) {
-                node.partnerNode = this.nodes.get(node.pid);
+                const partner = this.nodes.get(node.pid);
+                if (partner) {
+                    node.partnerNode = partner; // Keep legacy ref for safety
+                    node.partners.push({ node: partner, type: 'current' });
+                }
+            }
+
+            // 2. Previous Partners (prevpids)
+            if (node.prevpids && Array.isArray(node.prevpids)) {
+                node.prevpids.forEach(pid => {
+                    const prevPartner = this.nodes.get(pid);
+                    if (prevPartner) {
+                        node.partners.push({ node: prevPartner, type: 'previous' });
+                    }
+                });
             }
 
             this.nodes.forEach(potentialChild => {
@@ -156,8 +174,10 @@ class TreeLayout {
 
         const nodeWidth = CONFIG.cardWidth;
         let subtreeWidth = 0;
-        const hasPartner = !!node.partnerNode;
-        const selfWidth = hasPartner ? (nodeWidth * 2 + CONFIG.partnerSpacing) : nodeWidth;
+        
+        // Calculate width of the "Family Unit" (Node + All Partners)
+        const partnerCount = node.partners ? node.partners.length : 0;
+        const selfWidth = nodeWidth + (partnerCount * (nodeWidth + CONFIG.partnerSpacing));
 
         if (node.children.length === 0) {
             subtreeWidth = selfWidth;
@@ -171,18 +191,17 @@ class TreeLayout {
                 const child = children[i];
                 if (processedChildren.has(child.id)) { i++; continue; }
                 
-                let groupWidth = 0;
-                let partner = null;
-                if (child.pid) {
-                    partner = children.find(c => c.id === child.pid);
-                }
-
+                // Recursively layout child
                 let childW = this.calculateSubtree(child, depth + 1, visited);
                 
-                if (partner) {
-                        processedChildren.add(partner.id);
-                }
+                // Mark child as processed
                 processedChildren.add(child.id);
+                
+                // Also mark child's partners as processed to avoid double counting
+                // (Though layout logic drives primarily from bloodline, so partner checks here are just safety)
+                if (child.partners) {
+                    child.partners.forEach(p => processedChildren.add(p.node.id));
+                }
 
                 childGroups.push({ node: child, width: Math.max(childW, child.w) });
                 i++;
@@ -218,7 +237,9 @@ class TreeLayout {
         
         this.maxDepth = Math.max(this.maxDepth, depth);
 
-        const myWidth = node.partnerNode ? (CONFIG.cardWidth * 2 + CONFIG.partnerSpacing) : CONFIG.cardWidth;
+        // Width of Node + All Partners
+        const partnerCount = node.partners ? node.partners.length : 0;
+        const myWidth = CONFIG.cardWidth + (partnerCount * (CONFIG.cardWidth + CONFIG.partnerSpacing));
         
         if (!node.children || node.children.length === 0) {
             node._treeWidth = myWidth;
@@ -234,13 +255,12 @@ class TreeLayout {
             if(visitedChildren.has(child.id)) continue;
             visitedChildren.add(child.id);
 
-            let nextChild = null;
-            if (i < node.children.length - 1) {
-                nextChild = node.children[i+1];
-            }
+            // Grouping logic for immediate sibling partners isn't strictly necessary 
+            // if we assume tree structure, but good for stability.
+            // Simplified here to just process list.
             
-            if (nextChild && child.pid === nextChild.id) {
-                    visitedChildren.add(nextChild.id);
+            if (child.partners) {
+                child.partners.forEach(p => visitedChildren.add(p.node.id));
             }
 
             const w = this.widths(child, depth + 1); 
@@ -314,19 +334,26 @@ class TreeLayout {
         node.depth = depth;
         node.y = this.getYForDepth(depth);
         
-        const hasPartner = !!node.partnerNode;
-        const blockWidth = hasPartner ? (CONFIG.cardWidth * 2 + CONFIG.partnerSpacing) : CONFIG.cardWidth;
+        const partnerCount = node.partners ? node.partners.length : 0;
+        // Total block width including all partners
+        const blockWidth = CONFIG.cardWidth + (partnerCount * (CONFIG.cardWidth + CONFIG.partnerSpacing));
         
-        if (hasPartner) {
-            node.x = x - (blockWidth / 2) + (CONFIG.cardWidth / 2);
-            node.partnerNode.x = node.x + CONFIG.cardWidth + CONFIG.partnerSpacing;
-            node.partnerNode.y = node.y;
-            this.addToSpatialIndex(node.partnerNode, depth);
-        } else {
-            node.x = x;
-        }
-
+        // Position Main Node (Leftmost in the block)
+        // x is the center of the subtree area. We shift left to center the whole block.
+        node.x = x - (blockWidth / 2) + (CONFIG.cardWidth / 2);
+        
         this.addToSpatialIndex(node, depth);
+
+        // Position Partners to the right
+        if (node.partners) {
+            let currentX = node.x;
+            node.partners.forEach(p => {
+                currentX += CONFIG.cardWidth + CONFIG.partnerSpacing;
+                p.node.x = currentX;
+                p.node.y = node.y;
+                this.addToSpatialIndex(p.node, depth);
+            });
+        }
 
         if (node._childGroups && node._childGroups.length > 0) {
             let currentX = x - (node._childrenTotalWidth / 2); 
@@ -846,7 +873,7 @@ class TreeRenderer {
         const viewB = viewT + viewH;
 
         const minBucket = Math.floor((viewL - CONFIG.cardWidth) / this.layoutEngine.bucketSize);
-        const maxBucket = Math.floor((viewR + CONFIG.cardWidth) / this.layoutEngine.bucketSize);
+        const maxBucket = Math.floor((viewL + viewW + CONFIG.cardWidth) / this.layoutEngine.bucketSize);
 
         this.layoutEngine.layers.forEach(layer => {
             if (!layer) return;
@@ -1049,7 +1076,8 @@ class TreeRenderer {
         const minBucket = Math.floor((viewL - CONFIG.cardWidth) / this.layoutEngine.bucketSize);
         const maxBucket = Math.floor((viewL + viewW + CONFIG.cardWidth) / this.layoutEngine.bucketSize);
 
-        const connectionDrop = 25; // Distance below card for parent connection
+        const connectionDrop = 25; // Base Distance
+        const partnerStep = 20;     // Extra distance per partner index
 
         this.layoutEngine.layers.forEach((layer, depth) => {
              if (!layer) return;
@@ -1057,36 +1085,48 @@ class TreeRenderer {
              if (nextLayerY < viewT || layer.y > viewB) return;
 
              for (const node of layer.allNodes) {
-                 // 1. Partner Connection (The "U" shape)
-                 if (node.partnerNode && node.x < node.partnerNode.x) {
-                     ctx.save();
-                     const nodeDepth = node.depth || 0;
-                     const baseThick = Math.max(1.5, 5 - nodeDepth * 0.5); 
-                     ctx.lineWidth = getLineWidth(baseThick);
-                     ctx.setLineDash([]); // Solid line for brackets
-                     
-                     const bottomY = node.y + CONFIG.cardHeight;
-                     const targetY = bottomY + connectionDrop;
-                     
-                     const x1 = node.x;
-                     const x2 = node.partnerNode.x;
-                     const radius = 10; // Corner radius
+                 
+                 // 1. Draw Connections for ALL partners (Current & Previous)
+                 if (node.partners && node.partners.length > 0) {
+                     node.partners.forEach((partner, index) => {
+                        // Draw U-shape connection
+                        ctx.save();
+                        const nodeDepth = node.depth || 0;
+                        const baseThick = Math.max(1.5, 5 - nodeDepth * 0.5); 
+                        ctx.lineWidth = getLineWidth(baseThick);
+                        
+                        // DASHED for Previous, SOLID for Current
+                        if (partner.type === 'previous') {
+                            ctx.setLineDash([8 / scale, 6 / scale]);
+                        } else {
+                            ctx.setLineDash([]); 
+                        }
 
-                     ctx.beginPath();
-                     ctx.moveTo(x1, bottomY);
-                     // Down
-                     ctx.lineTo(x1, targetY - radius);
-                     // Corner 1
-                     ctx.quadraticCurveTo(x1, targetY, x1 + radius, targetY);
-                     // Across
-                     ctx.lineTo(x2 - radius, targetY);
-                     // Corner 2
-                     ctx.quadraticCurveTo(x2, targetY, x2, targetY - radius);
-                     // Up
-                     ctx.lineTo(x2, bottomY);
-                     
-                     ctx.stroke();
-                     ctx.restore();
+                        const bottomY = node.y + CONFIG.cardHeight;
+                        // STAGGERED VERTICAL DROP
+                        const currentDrop = connectionDrop + (index * partnerStep);
+                        const targetY = bottomY + currentDrop;
+                        
+                        const x1 = node.x;
+                        const x2 = partner.node.x;
+                        const radius = 10; 
+
+                        ctx.beginPath();
+                        ctx.moveTo(x1, bottomY);
+                        // Down
+                        ctx.lineTo(x1, targetY - radius);
+                        // Corner 1
+                        ctx.quadraticCurveTo(x1, targetY, x1 + radius, targetY);
+                        // Across
+                        ctx.lineTo(x2 - radius, targetY);
+                        // Corner 2
+                        ctx.quadraticCurveTo(x2, targetY, x2, targetY - radius);
+                        // Up
+                        ctx.lineTo(x2, bottomY);
+                        
+                        ctx.stroke();
+                        ctx.restore();
+                     });
                  }
 
                  // 2. Children Connections
@@ -1096,16 +1136,46 @@ class TreeRenderer {
                          const mother = child.mid ? this.layoutEngine.nodes.get(child.mid) : null;
                          const hasTwoParents = father && mother;
                          
-                         // Only draw connection from "primary" parent (father, or just use node id check)
-                         if (hasTwoParents && node.id !== father.id) return;
-                         
                          let originX = node.x;
                          let originY = node.y + CONFIG.cardHeight; 
                          
                          if (hasTwoParents) {
+                             // FIX: Determine which parent is the "anchor" (the one who lists the other as a partner)
+                             // This ensures we pick the correct partner index and U-curve height.
+                             
+                             let anchor = father; // Default fallback
+                             let partnerIndex = 0;
+                             let foundRelationship = false;
+
+                             // Check if Father has Mother as partner
+                             if (father.partners) {
+                                 const idx = father.partners.findIndex(p => p.node.id == mother.id);
+                                 if (idx !== -1) {
+                                     anchor = father;
+                                     partnerIndex = idx;
+                                     foundRelationship = true;
+                                 }
+                             }
+
+                             // Check if Mother has Father as partner (Override if found here and not above, or implies mother is primary)
+                             if (!foundRelationship && mother.partners) {
+                                 const idx = mother.partners.findIndex(p => p.node.id == father.id);
+                                 if (idx !== -1) {
+                                     anchor = mother;
+                                     partnerIndex = idx;
+                                     foundRelationship = true;
+                                 }
+                             }
+
+                             // CRITICAL: Only draw this connection when we are visiting the ANCHOR node.
+                             // This prevents double drawing and ensures we use the coordinates of the node that owns the U-curve.
+                             if (node.id !== anchor.id) return;
+
                              originX = (father.x + mother.x) / 2;
-                             // Connect to the bottom of the "U" bracket
-                             originY = father.y + CONFIG.cardHeight + connectionDrop;
+                             
+                             const currentDrop = connectionDrop + (partnerIndex * partnerStep);
+                             // Connect to the bottom of the specific U bracket
+                             originY = anchor.y + CONFIG.cardHeight + currentDrop;
                          }
                          
                          const destX = child.x;
