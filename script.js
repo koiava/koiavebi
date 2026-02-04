@@ -1043,43 +1043,65 @@ class TreeRenderer {
         const minBucket = Math.floor((viewL - CONFIG.cardWidth) / this.layoutEngine.bucketSize);
         const maxBucket = Math.floor((viewL + viewW + CONFIG.cardWidth) / this.layoutEngine.bucketSize);
 
+        const connectionDrop = 25; // Distance below card for parent connection
+
         this.layoutEngine.layers.forEach((layer, depth) => {
              if (!layer) return;
              const nextLayerY = this.layoutEngine.getYForDepth(depth + 1);
              if (nextLayerY < viewT || layer.y > viewB) return;
 
              for (const node of layer.allNodes) {
-                 if (node.partnerNode && node.id < node.partnerNode.id) {
+                 // 1. Partner Connection (The "U" shape)
+                 if (node.partnerNode && node.x < node.partnerNode.x) {
                      ctx.save();
                      const nodeDepth = node.depth || 0;
                      const baseThick = Math.max(1.5, 5 - nodeDepth * 0.5); 
                      ctx.lineWidth = getLineWidth(baseThick);
-                     ctx.setLineDash([6 / scale, 4 / scale]); 
+                     ctx.setLineDash([]); // Solid line for brackets
                      
+                     const bottomY = node.y + CONFIG.cardHeight;
+                     const targetY = bottomY + connectionDrop;
+                     
+                     const x1 = node.x;
+                     const x2 = node.partnerNode.x;
+                     const radius = 10; // Corner radius
+
                      ctx.beginPath();
-                     const yLevel = node.y + CONFIG.cardHeight * 0.8;
-                     const x1 = node.x + CONFIG.cardWidth/2;
-                     const x2 = node.partnerNode.x - CONFIG.cardWidth/2;
-                     ctx.moveTo(x1, yLevel);
-                     ctx.lineTo(x2, yLevel);
+                     ctx.moveTo(x1, bottomY);
+                     // Down
+                     ctx.lineTo(x1, targetY - radius);
+                     // Corner 1
+                     ctx.quadraticCurveTo(x1, targetY, x1 + radius, targetY);
+                     // Across
+                     ctx.lineTo(x2 - radius, targetY);
+                     // Corner 2
+                     ctx.quadraticCurveTo(x2, targetY, x2, targetY - radius);
+                     // Up
+                     ctx.lineTo(x2, bottomY);
+                     
                      ctx.stroke();
                      ctx.restore();
                  }
 
+                 // 2. Children Connections
                  if (node.children && node.children.length > 0) {
                      node.children.forEach(child => {
                          const father = child.fid ? this.layoutEngine.nodes.get(child.fid) : null;
                          const mother = child.mid ? this.layoutEngine.nodes.get(child.mid) : null;
                          const hasTwoParents = father && mother;
                          
+                         // Only draw connection from "primary" parent (father, or just use node id check)
                          if (hasTwoParents && node.id !== father.id) return;
                          
                          let originX = node.x;
                          let originY = node.y + CONFIG.cardHeight; 
+                         
                          if (hasTwoParents) {
                              originX = (father.x + mother.x) / 2;
-                             originY = father.y + CONFIG.cardHeight * 0.8;
+                             // Connect to the bottom of the "U" bracket
+                             originY = father.y + CONFIG.cardHeight + connectionDrop;
                          }
+                         
                          const destX = child.x;
                          const destY = child.y;
                          const midY = (originY + destY) / 2;
