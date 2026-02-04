@@ -978,10 +978,16 @@ class TreeRenderer {
         
         const maxWidth = CONFIG.cardWidth - 10;
         let nameText;
+
+        // Construct full name with default last name
+        const lastName = node.lastname || 'ქოიავა';
+        const fullName = `${node.name} ${lastName}`;
+
         if (node === this.hoveredNode) {
-            nameText = node.name;
+            nameText = fullName;
         } else {
-            nameText = this.getFittedText(ctx, node, 'name', node.name, maxWidth);
+            // Use fullName for fitting, but keep 'name' key since it represents the name slot
+            nameText = this.getFittedText(ctx, node, 'name', fullName, maxWidth);
         }
         ctx.fillText(nameText, textCenterX, textY);
         
@@ -1206,7 +1212,9 @@ function setupSearch() {
                 imgHtml = `<img src="${CONFIG.thumbnailPath + node.image}" class="search-avatar" onerror="this.parentElement.innerHTML='<div class=\\'search-avatar\\'>${node.name[0]}</div>'">`;
             }
 
-            const nameDisplay = node.profession ? `${node.name} - ${node.profession}` : node.name;
+            const lastName = node.lastname || 'ქოიავა';
+            const fullName = `${node.name} ${lastName}`;
+            const nameDisplay = node.profession ? `${fullName} - ${node.profession}` : fullName;
 
             div.innerHTML = `
                 ${imgHtml}
@@ -1276,9 +1284,11 @@ function setupSearch() {
             return;
         }
 
-        const matches = rawNodes.filter(node => 
-            node.name.toLowerCase().includes(query)
-        );
+        const matches = rawNodes.filter(node => {
+            const lastName = node.lastname || 'ქოიავა';
+            const fullName = `${node.name} ${lastName}`;
+            return fullName.toLowerCase().includes(query);
+        });
 
         currentMatches = matches.slice(0, 10);
         selectedIndex = 0; 
