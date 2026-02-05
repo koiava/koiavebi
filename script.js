@@ -1008,7 +1008,7 @@ class TreeRenderer {
 
         // Construct full name with default last name
         const lastName = node.lastname || 'ქოიავა';
-        const fullName = `${node.name} ${lastName}`;
+        const fullName = `${lastName} ${node.name}`;
 
         if (node === this.hoveredNode) {
             nameText = fullName;
@@ -1283,7 +1283,7 @@ function setupSearch() {
             }
 
             const lastName = node.lastname || 'ქოიავა';
-            const fullName = `${node.name} ${lastName}`;
+            const fullName = `${lastName} ${node.name}`;
             const nameDisplay = node.profession ? `${fullName} - ${node.profession}` : fullName;
 
             div.innerHTML = `
@@ -1356,7 +1356,7 @@ function setupSearch() {
 
         const matches = rawNodes.filter(node => {
             const lastName = node.lastname || 'ქოიავა';
-            const fullName = `${node.name} ${lastName}`;
+            const fullName = `${lastName} ${node.name}`;
             return fullName.toLowerCase().includes(query);
         });
 
