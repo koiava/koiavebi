@@ -74,7 +74,8 @@ const rawNodes = [
 		{ id:  31, name: "ვაჟა", birth: 2020, fid: 28, mid: 200, image: "vazha_2.jpg" },
 		{ id:  32, name: "დარეჯანი", birth: 1953, fb: "darejan.koiava", fid: 22, mid: 203, pid: 206, profession: "ექიმ-ლაბორანტი", image: "darejani.jpg" },
 		{ id: 206, name: "ჟუგორი", lastname: "გიორგობიანი", birth: 1948, death: '2014', image: "jugori_giorgobiani.jpg" },
-		{ id:  33, name: "ავთო", birth: 1954, death: 2008, fid: 22, mid: 203, pid: 207, image: "avto.jpg" },
+		{ id: 194, name: "თინათინი", birth: 1953, death: 1954, fid: 22, mid: 203 },
+		{ id:  33, name: "ავთანდილი", birth: 1954, death: 2008, fid: 22, mid: 203, pid: 207, image: "avto.jpg" },
 		{ id: 207, name: "ლელა", lastname: "ბერაია", birth: 1958, image: "lela_beraia.jpg" },
 		{ id:  34, name: "ირმა", birth: 1964, fb: "irma.koiava.9", pid: 210, fid: 22, mid: 203, profession: "ექიმ-ლაბორანტი", image: "irma.jpg" },
 		{ id: 210, name: "გულადი", lastname: "ხურცილავა", birth: 1962, fb: "profile.php?id=100089396543874", image: "guladi_khurtsilava.jpg" },
@@ -234,6 +235,7 @@ const rawNodes = [
 		{ id: 191, name: "ნაირა", lastname: "შარუხია", birth: 1957, mid: 89, fid: 188, fb: "naira.sharukhia", image: "naira_sharukhia.jpg" },
 		{ id: 192, name: "ემილია", lastname: "___", birth: 2007, mid: 58 },
 		{ id: 193, name: "პეტრე", lastname: "___", birth: 2011, mid: 58 },
+		/* id: 194 used little bit up*/
 		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
