@@ -1327,6 +1327,74 @@ function setupSearch() {
         }
     }
 
+    // --- SEO GENERATOR ---
+    // This injects data into the DOM so Search Engines can read it, 
+    // even though the visual display is on Canvas.
+    function generateSEO() {
+        if (!rawNodes || rawNodes.length === 0) return;
+
+        // 1. Structured Data (JSON-LD)
+        // This tells Google explicitly "Here is a list of People"
+        const schemaData = {
+            "@context": "https://schema.org",
+            "@type": "Dataset",
+            "name": "Koiava Family Tree - ქოიავების გვარის გენეოლოგია",
+            "description": "Family tree visualization for the Koiava family surname. ქოიავების გვარის ისტორია და გენეოლოგიური ხე.",
+            "creator": {
+                "@type": "Person",
+                "familyName": "Koiava"
+            },
+            "hasPart": rawNodes.map(node => {
+                const lastName = node.lastname || 'Koiava';
+                const fullName = `${lastName} ${node.name}`; // Georgian Order
+                return {
+                    "@type": "Person",
+                    "name": fullName,
+                    "givenName": node.name,
+                    "familyName": lastName,
+                    "birthDate": node.birth ? node.birth.toString() : undefined,
+                    "deathDate": node.death ? node.death.toString() : undefined,
+                    "jobTitle": node.profession
+                };
+            })
+        };
+
+        const scriptEl = document.createElement('script');
+        scriptEl.type = "application/ld+json";
+        scriptEl.text = JSON.stringify(schemaData);
+        document.head.appendChild(scriptEl);
+
+        // 2. Semantic HTML Content (Visually Hidden)
+        // This provides actual keywords for the crawler to index.
+        const seoContainer = document.createElement('div');
+        seoContainer.id = "seo-content";
+        // 'visually-hidden' style pattern standard for accessibility/SEO
+        seoContainer.style.cssText = "position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;";
+        
+        let htmlContent = `
+            <h1>Koiava Family Tree - ქოიავების გვარის გენეოლოგია</h1>
+            <p>This interactive tree visualizes the history of the Koiava family. Below is the list of family members included in this tree:</p>
+            <ul>
+        `;
+
+        rawNodes.forEach(node => {
+            const lastName = node.lastname || 'ქოიავა';
+            const fullName = `${lastName} ${node.name}`;
+            const dates = (node.birth || node.death) ? `(${node.birth || '?'} - ${node.death || '?'})` : '';
+            const job = node.profession ? `- ${node.profession}` : '';
+            
+            // Generate readable list item for crawlers
+            htmlContent += `<li>${fullName} ${dates} ${job}</li>`;
+        });
+
+        htmlContent += "</ul>";
+        seoContainer.innerHTML = htmlContent;
+        document.body.appendChild(seoContainer);
+    }
+
+    // Run SEO generation
+    generateSEO();
+
     input.addEventListener('keydown', (e) => {
         if (resultsContainer.style.display === 'none') return;
 
