@@ -304,7 +304,7 @@ const rawNodes = [
 		{ id: 380, name: "ნიკოლოზი", fid: 377, mid: 449, birth: 2002 },
 		{ id: 381, name: "ნინი", fid: 377, mid: 449,  birth: 2004 },
 		{ id: 382, name: "ლალი", fid: 368, mid: 443, birth: 1961, profession: "ექიმი", fb: "lali.koiava.5", pid: 448, prevpids: [425], image: "lali.jpg" },
-		{ id: 383, name: "ხათუნა", fid: 368, mid: 443, birth: 1963, death: 2007, pid: 428 },
+		{ id: 383, name: "ხათუნა", fid: 368, mid: 443, birth: 1963, death: 2007, pid: 428, image: "khatuna_2.jpg" },
 		{ id: 384, fid: 369, mid: 445, name: "რუსლანი", image: "ruslani.jpg" },
 		{ id: 385, name: "ლევანი", fid: 369, mid: 445, pid: 447, image: "levani_3.jpg" },
 		{ id: 387, name: "ლერა", lastname: "ოგონიოკი", fid: 385, mid: 447, birth: 2001, image: "lera_ogonek.jpg" },
