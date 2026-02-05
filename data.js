@@ -312,7 +312,7 @@ const rawNodes = [
 		{ id: 391, fid: 325, name: "ზინა" },
 		{ id: 392, fid: 325, name: "თათუშა" },
 		{ id: 393, fid: 325, name: "ვენერა" },
-		{ id: 394, name: "თამაზი", fid: 388, mid: 419, death: 2024, image: "tamazi.jpg" },
+		{ id: 394, name: "თამაზი", fid: 388, mid: 419, birth: 1932, death: 2024, profession: "გეოლოგი", image: "tamazi.jpg" },
 		{ id: 395, name: "მერაბი", birth: 1935, fb: "merab.koiava.37", fid: 388, mid: 419, pid: 413, image: "merabi_2.jpg" },
 		{ id: 396, name: "ნატო", pid: 421, fid: 388, mid: 419 },
 		{ id: 397, name: "გიგი", birth: 1967, fb: "george.koiava", fid: 394, pid: 417,  image: "gigi.jpg" },
@@ -364,7 +364,7 @@ const rawNodes = [
 		{ id: 443, name: "ლაურა", lastname: "კახიძე", birth: 1935, profession: "ინჟინერ-ფეიქარი", image: "laura_kakhidze.jpg" },
 		{ id: 444, name: "ალექსანდრა", lastname: "დუნდუა", death: '19??' },
 		{ id: 445, name: "ლუდმილა", death: '19??' },
-		{ id: 446, name: "ლიანა", lastname: "კახიძე", death: '19??', image: "liana_kakhidze.jpg" },
+		{ id: 446, name: "ლიანა", lastname: "კახიძე", birth: 1936, death: 2023, image: "liana_kakhidze.jpg" },
 		{ id: 447, name: "კატია", lastname: "ოგონიოკი", birth: 1977, death: 2007, profession: "მომღერალი", image: "katya_ogonek.jpg" },
 		{ id: 448, name: "???", lastname: "კობაიძე" },
 		
