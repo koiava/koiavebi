@@ -296,11 +296,11 @@ const rawNodes = [
 		{ id: 374, fid: 372, name: "ნათია", fb: "natia.koiava", image: "natia_3.jpg" },
 		{ id: 375, fid: 372, name: "ანი", image: "ani.jpg" },
 		{ id: 376, fid: 367, mid: 446, name: "მამუკა", fb: "mamuka.koiava.7", image: "mamuka.jpg", pid: 434 },
-		{ id: 377, fid: 367, mid: 446, name: "კახაბერი", birth: 1976, fb: "kakha.koiava", profession: "გეოლოგი", image: "kakha.jpg" },
+		{ id: 377, fid: 367, mid: 446, name: "კახაბერი", birth: 1976, fb: "kakha.koiava", pid: 449, profession: "გეოლოგი", image: "kakha.jpg" },
 		{ id: 378, name: "მარიამი", fb: "mariam.koiavaa", fid: 376, mid: 434, image: "mariami_3.jpg" },
 		{ id: 379, name: "ლუკა", fid: 376, mid: 434, image: "luka.jpg" },
-		{ id: 380, fid: 377, name: "ნიკოლოზი" },
-		{ id: 381, fid: 377, name: "ნინი" },
+		{ id: 380, name: "ნიკოლოზი", fid: 377, mid: 449, birth: 2002 },
+		{ id: 381, name: "ნინი", fid: 377, mid: 449,  birth: 2004 },
 		{ id: 382, name: "ლალი", fid: 368, mid: 443, birth: 1961, profession: "ექიმი", fb: "lali.koiava.5", pid: 448, prevpids: [425], image: "lali.jpg" },
 		{ id: 383, name: "ხათუნა", fid: 368, mid: 443, birth: 1963, death: 2007, pid: 428 },
 		{ id: 384, fid: 369, mid: 445, name: "რუსლანი", image: "ruslani.jpg" },
@@ -366,7 +366,9 @@ const rawNodes = [
 		{ id: 445, name: "ლუდმილა", death: '19??' },
 		{ id: 446, name: "ლიანა", lastname: "კახიძე", birth: 1936, death: 2023, image: "liana_kakhidze.jpg" },
 		{ id: 447, name: "კატია", lastname: "ოგონიოკი", birth: 1977, death: 2007, profession: "მომღერალი", image: "katya_ogonek.jpg" },
-		{ id: 448, name: "???", lastname: "კობაიძე" },
+		{ id: 448, name: "გელა", lastname: "კობაიძე", fb: "gela.k.obaidze.2025", image: "gela_kobaidze.jpg" },
+		{ id: 449, name: "ლიკა", lastname: "კვალიაშვილი", image: "lika_kvaliashvili.jpg" },
+
 		
 		
 		{ id: 1006, name: "მახა", birth: 1797, death: '1???', fid: 5 },
