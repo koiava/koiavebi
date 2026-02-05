@@ -341,7 +341,7 @@ const rawNodes = [
 		{ id: 420, name: "ნინო", lastname: "ჯუღელი", image: "nino_jugeli.jpg" },
 		{ id: 421, name: "თემური", lastname: "დევიძე" },
 		{ id: 422, name: "გია", lastname: "დევიძე", fid: 421, mid: 396 },
-		{ id: 423, name: "ჯილდა", birth: 1960, fb: "profile.php?id=100072628033802", image: "jilda_makalatia.jpg" },
+		{ id: 423, name: "ჯილდა", lastname: "მაკალათია", birth: 1960, fb: "profile.php?id=100072628033802", image: "jilda_makalatia.jpg" },
 		{ id: 424, name: "ზურა", birth: 1986, fb: "profile.php?id=100073972135549", fid: 357, mid: 423, image: "zura.jpg" },
 		{ id: 425, name: "მამუკა", lastname: "მოდებაძე", birth: 1964, death: 2017, profession: "ექიმი" },
 		{ id: 427, name: "ლილე", lastname: "კობაიძე", birth: 2002, mid: 382, fid: 448 },
