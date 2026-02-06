@@ -884,7 +884,9 @@ class TreeRenderer {
         // If interacting (dragging/zooming) AND on mobile, FORCE LOD 0 (Abstract/Fast)
         let lod = 2; // High
         
-        if (this.isInteracting && this.isMobile) {
+        const isFastMode = this.isInteracting && this.isMobile;
+        
+        if (isFastMode) {
             lod = 0; // Force Fast Mode
         } else {
             // Normal LOD logic based on zoom
@@ -905,6 +907,8 @@ class TreeRenderer {
         const minBucket = Math.floor((viewL - CONFIG.cardWidth) / this.layoutEngine.bucketSize);
         const maxBucket = Math.floor((viewL + viewW + CONFIG.cardWidth) / this.layoutEngine.bucketSize);
 
+        // 1. Collect Visible Nodes
+        const visibleNodes = [];
         this.layoutEngine.layers.forEach(layer => {
             if (!layer) return;
             if (layer.y + CONFIG.cardHeight < viewT || layer.y > viewB) return;
@@ -915,25 +919,20 @@ class TreeRenderer {
 
                 for (const node of bucket) {
                     if (node.x + halfW < viewL || node.x - halfW > viewR) continue;
-                    if (node === this.hoveredNode) continue; 
-                    this.drawSingleNode(ctx, node, lod, useHighRes);
+                    // Skip hovered node to draw it last (on top), unless in fast mode where z-index matters less than speed
+                    if (node !== this.hoveredNode) visibleNodes.push(node);
                 }
             }
         });
 
+        // Add hovered node to the end
         if (this.hoveredNode) {
-             this.drawSingleNode(ctx, this.hoveredNode, lod, useHighRes);
+             visibleNodes.push(this.hoveredNode);
         }
-    }
 
-    drawSingleNode(ctx, node, lod, useHighRes) {
-        const x = node.x - CONFIG.cardWidth / 2;
-        const y = node.y;
-        const w = CONFIG.cardWidth;
-        const h = CONFIG.cardHeight;
-        const r = 8; 
+        if (visibleNodes.length === 0) return;
 
-        // Common: Background & Border
+        // --- BATCH 1: Backgrounds ---
         ctx.fillStyle = CONFIG.defaultColor;
         
         // Shadow: ONLY if High LOD. If Mobile, disable shadow during interaction
@@ -943,27 +942,123 @@ class TreeRenderer {
             ctx.shadowBlur = 10;
             ctx.shadowOffsetY = 2;
         }
-        
+
         ctx.beginPath();
-        // Use regular rect if interacting on MOBILE for extreme speed, roundRect otherwise
-        if (this.isInteracting && this.isMobile) {
-             ctx.rect(x, y, w, h);
-        } else {
-             ctx.roundRect(x, y, w, h, r);
+        for (const node of visibleNodes) {
+            const x = node.x - CONFIG.cardWidth / 2;
+            const y = node.y;
+            // Use regular rect if interacting on MOBILE for extreme speed, roundRect otherwise
+            if (isFastMode) {
+                 ctx.rect(x, y, CONFIG.cardWidth, CONFIG.cardHeight);
+            } else {
+                 ctx.roundRect(x, y, CONFIG.cardWidth, CONFIG.cardHeight, 8);
+            }
         }
         ctx.fill();
         ctx.shadowColor = "transparent";
 
-        // Border
-        if (node.id === this.selectedNodeId) {
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = CONFIG.selectedBorderColor;
-        } else {
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = (node.death === undefined) ? CONFIG.aliveBorderColor : CONFIG.deadBorderColor;
-        }
-        ctx.stroke();
+        // --- BATCH 2: Borders ---
+        // Group by style to minimize state changes
+        const selectedNodes = [];
+        const aliveNodes = [];
+        const deadNodes = [];
 
+        for (const node of visibleNodes) {
+            if (node.id === this.selectedNodeId) selectedNodes.push(node);
+            else if (node.death !== undefined) deadNodes.push(node);
+            else aliveNodes.push(node);
+        }
+
+        const drawBorderBatch = (nodes, color, width) => {
+            if (nodes.length === 0) return;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            for (const node of nodes) {
+                const x = node.x - CONFIG.cardWidth / 2;
+                const y = node.y;
+                if (isFastMode) ctx.rect(x, y, CONFIG.cardWidth, CONFIG.cardHeight);
+                else ctx.roundRect(x, y, CONFIG.cardWidth, CONFIG.cardHeight, 8);
+            }
+            ctx.stroke();
+        };
+
+        drawBorderBatch(aliveNodes, CONFIG.aliveBorderColor, 2);
+        drawBorderBatch(deadNodes, CONFIG.deadBorderColor, 2);
+        drawBorderBatch(selectedNodes, CONFIG.selectedBorderColor, 4);
+
+        // --- BATCH 3: Content ---
+        if (lod < 2) {
+            // Fast Mode: Batch primitives
+            this.drawLowLodContent(ctx, visibleNodes);
+        } else {
+            // HQ Mode: Individual draw calls (images require clipping/state changes)
+            for (const node of visibleNodes) {
+                this.drawNodeContent(ctx, node, useHighRes);
+            }
+        }
+    }
+
+    drawLowLodContent(ctx, nodes) {
+        const imgSize = CONFIG.avatarSize;
+        const radius = imgSize / 2;
+
+        // 1. Avatars (Grey Circles or Avg Color)
+        // We iterate individually here because color changes per node.
+        // If we strictly wanted batching, we'd group by color, but that's overkill for < 200 nodes.
+        // The overhead is path creation, not fill style change.
+        for (const node of nodes) {
+            const x = node.x - CONFIG.cardWidth / 2;
+            const y = node.y;
+            const centerX = x + (CONFIG.cardWidth - imgSize) / 2 + radius;
+            const centerY = y + 15 + radius;
+
+            const imgData = this.imageManager.get(node, false);
+            ctx.fillStyle = (imgData && imgData.avgColor) ? imgData.avgColor : "#e0e0e0";
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // 2. Text Placeholders (Grey Rects) - STRICT BATCHING
+        const nameWidth = 80;
+        const profWidth = 60;
+        
+        // Name Lines
+        ctx.fillStyle = "#d0d0d0";
+        ctx.beginPath();
+        for (const node of nodes) {
+            const x = node.x - CONFIG.cardWidth / 2;
+            const y = node.y;
+            const textCenterX = x + CONFIG.cardWidth / 2;
+            let textY = y + 15 + imgSize + 20;
+            ctx.rect(textCenterX - nameWidth/2, textY, nameWidth, 12);
+        }
+        ctx.fill();
+
+        // Profession Lines
+        ctx.fillStyle = "#e8e8e8";
+        ctx.beginPath();
+        for (const node of nodes) {
+            if (node.profession) {
+                const x = node.x - CONFIG.cardWidth / 2;
+                const y = node.y;
+                const textCenterX = x + CONFIG.cardWidth / 2;
+                let textY = y + 15 + imgSize + 20 + 18;
+                ctx.rect(textCenterX - profWidth/2, textY, profWidth, 10);
+            }
+        }
+        ctx.fill();
+    }
+
+    drawNodeContent(ctx, node, useHighRes) {
+        const x = node.x - CONFIG.cardWidth / 2;
+        const y = node.y;
+        const w = CONFIG.cardWidth;
+        const h = CONFIG.cardHeight;
+
+        // Geometry calculations for content
         const imgSize = CONFIG.avatarSize;
         const imgX = x + (w - imgSize) / 2; 
         const imgY = y + 15;
@@ -971,37 +1066,6 @@ class TreeRenderer {
         const centerX = imgX + radius;
         const centerY = imgY + radius;
 
-        // --- LOD < 2 (Abstract/Fast View) ---
-        if (lod < 2) {
-            // 1. Avatar Circle 
-            const imgData = this.imageManager.get(node, false);
-            ctx.fillStyle = (imgData && imgData.avgColor) ? imgData.avgColor : "#e0e0e0";
-            
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 2. Text Lines (Abstract rectangles)
-            const textCenterX = x + w / 2;
-            let textY = imgY + imgSize + 20;
-            
-            // Name Line
-            ctx.fillStyle = "#d0d0d0";
-            const nameWidth = 80;
-            ctx.fillRect(textCenterX - nameWidth/2, textY, nameWidth, 12);
-            
-            // Profession Line
-            if (node.profession) {
-                ctx.fillStyle = "#e8e8e8";
-                const profWidth = 60;
-                ctx.fillRect(textCenterX - profWidth/2, textY + 18, profWidth, 10);
-            }
-            
-            return;
-        }
-
-        // --- LOD 2 (High Detail) ---
-        
         // Image
         const imgData = this.imageManager.get(node, useHighRes);
         
@@ -1089,8 +1153,10 @@ class TreeRenderer {
     }
 
     drawConnections(ctx) {
-        // PERFORMANCE: If we are interacting (moving) AND on mobile, skip drawing connections entirely.
-        if (this.isInteracting && this.isMobile) return;
+        // PERFORMANCE: If we are interacting (moving) AND on mobile, use FAST MODE (Batching)
+        // If static or desktop, use HQ MODE (Variable widths, per-line stroke)
+        
+        const isFastMode = this.isInteracting && this.isMobile;
 
         const scale = this.transform.k;
         const getLineWidth = (baseWidth) => Math.max(baseWidth * scale, 1) / scale;
@@ -1103,129 +1169,158 @@ class TreeRenderer {
         const viewH = this.canvas.height / (window.devicePixelRatio||1) / scale;
         const viewB = viewT + viewH;
         
-        const minBucket = Math.floor((viewL - CONFIG.cardWidth) / this.layoutEngine.bucketSize);
-        const maxBucket = Math.floor((viewL + viewW + CONFIG.cardWidth) / this.layoutEngine.bucketSize);
-
         const connectionDrop = 25; // Base Distance
         const partnerStep = 20;     // Extra distance per partner index
 
-        this.layoutEngine.layers.forEach((layer, depth) => {
-             if (!layer) return;
-             const nextLayerY = this.layoutEngine.getYForDepth(depth + 1);
-             if (nextLayerY < viewT || layer.y > viewB) return;
+        // Setup Fast Mode Context
+        if (isFastMode) {
+            ctx.lineWidth = 1.5 / scale; // Constant width for performance
+        }
 
-             for (const node of layer.allNodes) {
-                 
-                 // 1. Draw Connections for ALL partners (Current & Previous)
-                 if (node.partners && node.partners.length > 0) {
-                     node.partners.forEach((partner, index) => {
-                        // Draw U-shape connection
-                        ctx.save();
-                        // Use globalDepth for line thickness consistency
-                        const nodeDepth = node.globalDepth || 0;
-                        const baseThick = Math.max(1.5, 5 - nodeDepth * 0.5); 
-                        ctx.lineWidth = getLineWidth(baseThick);
-                        
-                        // DASHED for Previous, SOLID for Current
-                        if (partner.type === 'previous') {
-                            ctx.setLineDash([8 / scale, 6 / scale]);
-                        } else {
-                            ctx.setLineDash([]); 
-                        }
+        // Helper to determine draw pass
+        // passType: 0 = HQ (Single Pass), 1 = Fast Solid, 2 = Fast Dashed
+        const renderPass = (passType) => {
+            
+            if (passType === 1) { // Fast Solid
+                ctx.beginPath();
+                ctx.setLineDash([]);
+            } else if (passType === 2) { // Fast Dashed
+                ctx.beginPath();
+                ctx.setLineDash([8 / scale, 6 / scale]);
+            }
 
-                        const bottomY = node.y + CONFIG.cardHeight;
-                        // STAGGERED VERTICAL DROP
-                        const currentDrop = connectionDrop + (index * partnerStep);
-                        const targetY = bottomY + currentDrop;
-                        
-                        const x1 = node.x;
-                        const x2 = partner.node.x;
-                        const radius = 10; 
+            this.layoutEngine.layers.forEach((layer, depth) => {
+                if (!layer) return;
+                const nextLayerY = this.layoutEngine.getYForDepth(depth + 1);
+                if (nextLayerY < viewT || layer.y > viewB) return;
 
-                        ctx.beginPath();
-                        ctx.moveTo(x1, bottomY);
-                        // Down
-                        ctx.lineTo(x1, targetY - radius);
-                        // Corner 1
-                        ctx.quadraticCurveTo(x1, targetY, x1 + radius, targetY);
-                        // Across
-                        ctx.lineTo(x2 - radius, targetY);
-                        // Corner 2
-                        ctx.quadraticCurveTo(x2, targetY, x2, targetY - radius);
-                        // Up
-                        ctx.lineTo(x2, bottomY);
-                        
-                        ctx.stroke();
-                        ctx.restore();
-                     });
-                 }
+                for (const node of layer.allNodes) {
+                    
+                    // 1. Partners
+                    if (node.partners && node.partners.length > 0) {
+                        node.partners.forEach((partner, index) => {
+                            const isDashed = partner.type === 'previous';
+                            
+                            // Fast Mode Filtering
+                            if (passType === 1 && isDashed) return; // Skip dashed in solid pass
+                            if (passType === 2 && !isDashed) return; // Skip solid in dashed pass
 
-                 // 2. Children Connections
-                 if (node.children && node.children.length > 0) {
-                     node.children.forEach(child => {
-                         const father = child.fid ? this.layoutEngine.nodes.get(child.fid) : null;
-                         const mother = child.mid ? this.layoutEngine.nodes.get(child.mid) : null;
-                         const hasTwoParents = father && mother;
-                         
-                         let originX = node.x;
-                         let originY = node.y + CONFIG.cardHeight; 
-                         
-                         if (hasTwoParents) {
-                             // FIX: Determine which parent is the "anchor" (the one who lists the other as a partner)
-                             // This ensures we pick the correct partner index and U-curve height.
-                             
-                             let anchor = father; // Default fallback
-                             let partnerIndex = 0;
-                             let foundRelationship = false;
+                            // HQ Setup
+                            if (passType === 0) {
+                                ctx.save();
+                                const nodeDepth = node.globalDepth || 0;
+                                const baseThick = Math.max(1.5, 5 - nodeDepth * 0.5); 
+                                ctx.lineWidth = getLineWidth(baseThick);
+                                ctx.setLineDash(isDashed ? [8 / scale, 6 / scale] : []);
+                                ctx.beginPath();
+                            }
 
-                             // Check if Father has Mother as partner
-                             if (father.partners) {
-                                 const idx = father.partners.findIndex(p => p.node.id == mother.id);
-                                 if (idx !== -1) {
-                                     anchor = father;
-                                     partnerIndex = idx;
-                                     foundRelationship = true;
-                                 }
-                             }
+                            // Geometry
+                            const bottomY = node.y + CONFIG.cardHeight;
+                            const currentDrop = connectionDrop + (index * partnerStep);
+                            const targetY = bottomY + currentDrop;
+                            const x1 = node.x;
+                            const x2 = partner.node.x;
+                            const radius = 10; 
 
-                             // Check if Mother has Father as partner (Override if found here and not above, or implies mother is primary)
-                             if (!foundRelationship && mother.partners) {
-                                 const idx = mother.partners.findIndex(p => p.node.id == father.id);
-                                 if (idx !== -1) {
-                                     anchor = mother;
-                                     partnerIndex = idx;
-                                     foundRelationship = true;
-                                 }
-                             }
+                            ctx.moveTo(x1, bottomY);
+                            ctx.lineTo(x1, targetY - radius);
+                            ctx.quadraticCurveTo(x1, targetY, x1 + radius, targetY);
+                            ctx.lineTo(x2 - radius, targetY);
+                            ctx.quadraticCurveTo(x2, targetY, x2, targetY - radius);
+                            ctx.lineTo(x2, bottomY);
+                            
+                            // HQ Stroke
+                            if (passType === 0) {
+                                ctx.stroke();
+                                ctx.restore();
+                            }
+                        });
+                    }
 
-                             // CRITICAL: Only draw this connection when we are visiting the ANCHOR node.
-                             // This prevents double drawing and ensures we use the coordinates of the node that owns the U-curve.
-                             if (node.id !== anchor.id) return;
+                    // 2. Children
+                    if (node.children && node.children.length > 0) {
+                        // Children are always solid. Skip in dashed pass.
+                        if (passType === 2) continue;
 
-                             originX = (father.x + mother.x) / 2;
-                             
-                             const currentDrop = connectionDrop + (partnerIndex * partnerStep);
-                             // Connect to the bottom of the specific U bracket
-                             originY = anchor.y + CONFIG.cardHeight + currentDrop;
-                         }
-                         
-                         const destX = child.x;
-                         const destY = child.y;
-                         const midY = (originY + destY) / 2;
+                        node.children.forEach(child => {
+                            const father = child.fid ? this.layoutEngine.nodes.get(child.fid) : null;
+                            const mother = child.mid ? this.layoutEngine.nodes.get(child.mid) : null;
+                            const hasTwoParents = father && mother;
+                            
+                            // Anchor Logic (Robust)
+                            let anchor = father; // Default
+                            if (hasTwoParents) {
+                                let foundRelationship = false;
 
-                         const childDepth = child.depth || 0;
-                         const thickness = Math.max(1.5, 8 - childDepth * 0.7);
-                         
-                         ctx.lineWidth = getLineWidth(thickness);
+                                if (father.partners) {
+                                    const idx = father.partners.findIndex(p => p.node.id == mother.id);
+                                    if (idx !== -1) { anchor = father; foundRelationship = true; }
+                                }
+                                if (!foundRelationship && mother.partners) {
+                                    const idx = mother.partners.findIndex(p => p.node.id == father.id);
+                                    if (idx !== -1) { anchor = mother; foundRelationship = true; }
+                                }
+                            } else if (father && !mother) {
+                                anchor = father;
+                            } else if (!father && mother) {
+                                anchor = mother;
+                            }
 
-                         ctx.beginPath();
-                         ctx.moveTo(originX, originY);
-                         ctx.bezierCurveTo(originX, midY, destX, midY, destX, destY);
-                         ctx.stroke();
-                     });
-                 }
-             }
-        });
+                            // Only draw if we are at the anchor
+                            if (anchor && node.id !== anchor.id) return;
+                            
+                            // HQ Setup
+                            if (passType === 0) {
+                                const childDepth = child.depth || 0;
+                                const thickness = Math.max(1.5, 8 - childDepth * 0.7);
+                                ctx.lineWidth = getLineWidth(thickness);
+                                ctx.beginPath();
+                            }
+
+                            // Geometry
+                            let originX = node.x;
+                            let originY = node.y + CONFIG.cardHeight; 
+                            
+                            if (hasTwoParents) {
+                                originX = (father.x + mother.x) / 2;
+                                
+                                // Re-calculate index for height
+                                let pIndex = 0;
+                                if (anchor.partners) {
+                                    const other = (anchor.id === father.id) ? mother : father;
+                                    const idx = anchor.partners.findIndex(p => p.node.id == other.id);
+                                    if (idx !== -1) pIndex = idx;
+                                }
+                                originY = anchor.y + CONFIG.cardHeight + connectionDrop + (pIndex * partnerStep);
+                            }
+                            
+                            const destX = child.x;
+                            const destY = child.y;
+                            const midY = (originY + destY) / 2;
+
+                            ctx.moveTo(originX, originY);
+                            ctx.bezierCurveTo(originX, midY, destX, midY, destX, destY);
+
+                            if (passType === 0) {
+                                ctx.stroke();
+                            }
+                        });
+                    }
+                }
+            });
+
+            if (passType > 0) {
+                ctx.stroke(); // Batch Stroke
+            }
+        };
+
+        if (isFastMode) {
+            renderPass(1); // Solid Batch
+            renderPass(2); // Dashed Batch
+        } else {
+            renderPass(0); // HQ Individual
+        }
     }
 
     drawTimeline(ctx, h) {
