@@ -1195,35 +1195,36 @@ class TreeRenderer {
                 if (nextLayerY < viewT || layer.y > viewB) return;
 
                 for (const node of layer.allNodes) {
-                    
-                    // 1. Partners
-                    if (node.partners && node.partners.length > 0) {
-                        node.partners.forEach((partner, index) => {
-                            const isDashed = partner.type === 'previous';
-                            
-                            // Fast Mode Filtering
-                            if (passType === 1 && isDashed) return; // Skip dashed in solid pass
-                            if (passType === 2 && !isDashed) return; // Skip solid in dashed pass
+                 
+                 // 1. Draw Connections for ALL partners (Current & Previous)
+                 if (node.partners && node.partners.length > 0) {
+                     node.partners.forEach((partner, index) => {
+                        // Draw U-shape connection
+                        ctx.save();
+                        // Match thickness logic with children connections (base 8, factor 0.7)
+                        // Use local depth (node.depth) for consistency with child loop
+                        const nodeDepth = node.depth || 0;
+                        const baseThick = Math.max(1.5, 8 - nodeDepth * 0.7); 
+                        ctx.lineWidth = getLineWidth(baseThick);
+                        
+                        // DASHED for Previous, SOLID for Current
+                        if (partner.type === 'previous') {
+                            ctx.setLineDash([8 / scale, 6 / scale]);
+                        } else {
+                            ctx.setLineDash([]); 
+                        }
 
-                            // HQ Setup
-                            if (passType === 0) {
-                                ctx.save();
-                                const nodeDepth = node.globalDepth || 0;
-                                const baseThick = Math.max(1.5, 5 - nodeDepth * 0.5); 
-                                ctx.lineWidth = getLineWidth(baseThick);
-                                ctx.setLineDash(isDashed ? [8 / scale, 6 / scale] : []);
-                                ctx.beginPath();
-                            }
+                        const bottomY = node.y + CONFIG.cardHeight;
+                        // STAGGERED VERTICAL DROP
+                        const currentDrop = connectionDrop + (index * partnerStep);
+                        const targetY = bottomY + currentDrop;
+                        
+                        const x1 = node.x;
+                        const x2 = partner.node.x;
+                        const radius = 10; 
 
-                            // Geometry
-                            const bottomY = node.y + CONFIG.cardHeight;
-                            const currentDrop = connectionDrop + (index * partnerStep);
-                            const targetY = bottomY + currentDrop;
-                            const x1 = node.x;
-                            const x2 = partner.node.x;
-                            const radius = 10; 
-
-                            ctx.moveTo(x1, bottomY);
+                        ctx.beginPath();
+                        ctx.moveTo(x1, bottomY);
                             ctx.lineTo(x1, targetY - radius);
                             ctx.quadraticCurveTo(x1, targetY, x1 + radius, targetY);
                             ctx.lineTo(x2 - radius, targetY);
