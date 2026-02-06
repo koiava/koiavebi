@@ -880,8 +880,7 @@ class TreeRenderer {
         const halfW = CONFIG.cardWidth / 2;
         const scale = this.transform.k;
         
-        // Determine LOD Level
-        // If interacting (dragging/zooming) AND on mobile, FORCE LOD 0 (Abstract/Fast)
+        // Determine LOD Level based on zoom or interaction
         let lod = 2; // High
         
         const isFastMode = this.isInteracting && this.isMobile;
@@ -919,7 +918,7 @@ class TreeRenderer {
 
                 for (const node of bucket) {
                     if (node.x + halfW < viewL || node.x - halfW > viewR) continue;
-                    // Skip hovered node to draw it last (on top), unless in fast mode where z-index matters less than speed
+                    // Skip hovered node to draw it last (on top)
                     if (node !== this.hoveredNode) visibleNodes.push(node);
                 }
             }
@@ -932,7 +931,7 @@ class TreeRenderer {
 
         if (visibleNodes.length === 0) return;
 
-        // --- BUG FIX: Reset Dash ---
+        // Reset Dash style from connections drawing
         ctx.setLineDash([]);
 
         // --- BATCH 1: Backgrounds ---
@@ -950,8 +949,8 @@ class TreeRenderer {
         for (const node of visibleNodes) {
             const x = node.x - CONFIG.cardWidth / 2;
             const y = node.y;
-            // Use regular rect if interacting on MOBILE for extreme speed, roundRect otherwise
-            if (isFastMode) {
+            // Use rect for very low lod or interaction, roundRect otherwise
+            if (lod < 1) {
                  ctx.rect(x, y, CONFIG.cardWidth, CONFIG.cardHeight);
             } else {
                  ctx.roundRect(x, y, CONFIG.cardWidth, CONFIG.cardHeight, 8);
@@ -980,7 +979,7 @@ class TreeRenderer {
             for (const node of nodes) {
                 const x = node.x - CONFIG.cardWidth / 2;
                 const y = node.y;
-                if (isFastMode) ctx.rect(x, y, CONFIG.cardWidth, CONFIG.cardHeight);
+                if (lod < 1) ctx.rect(x, y, CONFIG.cardWidth, CONFIG.cardHeight);
                 else ctx.roundRect(x, y, CONFIG.cardWidth, CONFIG.cardHeight, 8);
             }
             ctx.stroke();
@@ -1007,9 +1006,6 @@ class TreeRenderer {
         const radius = imgSize / 2;
 
         // 1. Avatars (Grey Circles or Avg Color)
-        // We iterate individually here because color changes per node.
-        // If we strictly wanted batching, we'd group by color, but that's overkill for < 200 nodes.
-        // The overhead is path creation, not fill style change.
         for (const node of nodes) {
             const x = node.x - CONFIG.cardWidth / 2;
             const y = node.y;
@@ -1156,11 +1152,8 @@ class TreeRenderer {
     }
 
     drawConnections(ctx) {
-        // PERFORMANCE: If we are interacting (moving) AND on mobile, use FAST MODE (Batching)
-        // If static or desktop, use HQ MODE (Variable widths, per-line stroke)
+        // Unified Batched Rendering for Connections
         
-        const isFastMode = this.isInteracting && this.isMobile;
-
         const scale = this.transform.k;
         const getLineWidth = (baseWidth) => Math.max(baseWidth * scale, 1) / scale;
         
@@ -1175,156 +1168,141 @@ class TreeRenderer {
         const connectionDrop = 25; // Base Distance
         const partnerStep = 20;     // Extra distance per partner index
 
-        // Setup Fast Mode Context
-        if (isFastMode) {
-            ctx.lineWidth = 1.5 / scale; // Constant width for performance
-        }
+        // Iterate through layers
+        this.layoutEngine.layers.forEach((layer, depth) => {
+            if (!layer) return;
+            const nextLayerY = this.layoutEngine.getYForDepth(depth + 1);
+            if (nextLayerY < viewT || layer.y > viewB) return;
 
-        // Helper to determine draw pass
-        // passType: 0 = HQ (Single Pass), 1 = Fast Solid, 2 = Fast Dashed
-        const renderPass = (passType) => {
-            
-            if (passType === 1) { // Fast Solid
-                ctx.beginPath();
-                ctx.setLineDash([]);
-            } else if (passType === 2) { // Fast Dashed
-                ctx.beginPath();
-                ctx.setLineDash([8 / scale, 6 / scale]);
-            }
+            // Calculate thickness for this layer (Partner connections)
+            const partnerThick = Math.max(1.5, 8 - depth * 0.7); 
+            const lwPartner = getLineWidth(partnerThick);
 
-            this.layoutEngine.layers.forEach((layer, depth) => {
-                if (!layer) return;
-                const nextLayerY = this.layoutEngine.getYForDepth(depth + 1);
-                if (nextLayerY < viewT || layer.y > viewB) return;
+            // Calculate thickness for children (Next layer connections)
+            const childThick = Math.max(1.5, 8 - (depth + 1) * 0.7);
+            const lwChild = getLineWidth(childThick);
 
-                for (const node of layer.allNodes) {
-                 
-                 // 1. Draw Connections for ALL partners (Current & Previous)
-                 if (node.partners && node.partners.length > 0) {
-                     node.partners.forEach((partner, index) => {
-                        // Draw U-shape connection
-                        ctx.save();
-                        // Match thickness logic with children connections (base 8, factor 0.7)
-                        // Use local depth (node.depth) for consistency with child loop
-                        const nodeDepth = node.depth || 0;
-                        const baseThick = Math.max(1.5, 8 - nodeDepth * 0.7); 
-                        ctx.lineWidth = getLineWidth(baseThick);
-                        
-                        // DASHED for Previous, SOLID for Current
-                        if (partner.type === 'previous') {
-                            ctx.setLineDash([8 / scale, 6 / scale]);
-                        } else {
-                            ctx.setLineDash([]); 
-                        }
+            // PASS 1: Solid Partners
+            ctx.beginPath();
+            let hasSolidPartner = false;
+            for (const node of layer.allNodes) {
+                if (node.partners) {
+                    node.partners.forEach((p, index) => {
+                        if (p.type !== 'previous') {
+                            const bottomY = node.y + CONFIG.cardHeight;
+                            const currentDrop = connectionDrop + (index * partnerStep);
+                            const targetY = bottomY + currentDrop;
+                            const x1 = node.x;
+                            const x2 = p.node.x;
+                            const radius = 10; 
 
-                        const bottomY = node.y + CONFIG.cardHeight;
-                        // STAGGERED VERTICAL DROP
-                        const currentDrop = connectionDrop + (index * partnerStep);
-                        const targetY = bottomY + currentDrop;
-                        
-                        const x1 = node.x;
-                        const x2 = partner.node.x;
-                        const radius = 10; 
-
-                        ctx.beginPath();
-                        ctx.moveTo(x1, bottomY);
+                            ctx.moveTo(x1, bottomY);
                             ctx.lineTo(x1, targetY - radius);
                             ctx.quadraticCurveTo(x1, targetY, x1 + radius, targetY);
                             ctx.lineTo(x2 - radius, targetY);
                             ctx.quadraticCurveTo(x2, targetY, x2, targetY - radius);
                             ctx.lineTo(x2, bottomY);
-                            
-                            // HQ Stroke
-                            if (passType === 0) {
-                                ctx.stroke();
-                                ctx.restore();
-                            }
-                        });
-                    }
-
-                    // 2. Children
-                    if (node.children && node.children.length > 0) {
-                        // Children are always solid. Skip in dashed pass.
-                        if (passType === 2) continue;
-
-                        node.children.forEach(child => {
-                            const father = child.fid ? this.layoutEngine.nodes.get(child.fid) : null;
-                            const mother = child.mid ? this.layoutEngine.nodes.get(child.mid) : null;
-                            const hasTwoParents = father && mother;
-                            
-                            // Anchor Logic (Robust)
-                            let anchor = father; // Default
-                            if (hasTwoParents) {
-                                let foundRelationship = false;
-
-                                if (father.partners) {
-                                    const idx = father.partners.findIndex(p => p.node.id == mother.id);
-                                    if (idx !== -1) { anchor = father; foundRelationship = true; }
-                                }
-                                if (!foundRelationship && mother.partners) {
-                                    const idx = mother.partners.findIndex(p => p.node.id == father.id);
-                                    if (idx !== -1) { anchor = mother; foundRelationship = true; }
-                                }
-                            } else if (father && !mother) {
-                                anchor = father;
-                            } else if (!father && mother) {
-                                anchor = mother;
-                            }
-
-                            // Only draw if we are at the anchor
-                            if (anchor && node.id !== anchor.id) return;
-                            
-                            // HQ Setup
-                            if (passType === 0) {
-                                const childDepth = child.depth || 0;
-                                const thickness = Math.max(1.5, 8 - childDepth * 0.7);
-                                ctx.lineWidth = getLineWidth(thickness);
-                                ctx.beginPath();
-                            }
-
-                            // Geometry
-                            let originX = node.x;
-                            let originY = node.y + CONFIG.cardHeight; 
-                            
-                            if (hasTwoParents) {
-                                originX = (father.x + mother.x) / 2;
-                                
-                                // Re-calculate index for height
-                                let pIndex = 0;
-                                if (anchor.partners) {
-                                    const other = (anchor.id === father.id) ? mother : father;
-                                    const idx = anchor.partners.findIndex(p => p.node.id == other.id);
-                                    if (idx !== -1) pIndex = idx;
-                                }
-                                originY = anchor.y + CONFIG.cardHeight + connectionDrop + (pIndex * partnerStep);
-                            }
-                            
-                            const destX = child.x;
-                            const destY = child.y;
-                            const midY = (originY + destY) / 2;
-
-                            ctx.moveTo(originX, originY);
-                            ctx.bezierCurveTo(originX, midY, destX, midY, destX, destY);
-
-                            if (passType === 0) {
-                                ctx.stroke();
-                            }
-                        });
-                    }
+                            hasSolidPartner = true;
+                        }
+                    });
                 }
-            });
-
-            if (passType > 0) {
-                ctx.stroke(); // Batch Stroke
             }
-        };
+            if (hasSolidPartner) {
+                ctx.lineWidth = lwPartner;
+                ctx.setLineDash([]);
+                ctx.stroke();
+            }
 
-        if (isFastMode) {
-            renderPass(1); // Solid Batch
-            renderPass(2); // Dashed Batch
-        } else {
-            renderPass(0); // HQ Individual
-        }
+            // PASS 2: Dashed Partners
+            ctx.beginPath();
+            let hasDashedPartner = false;
+            for (const node of layer.allNodes) {
+                if (node.partners) {
+                    node.partners.forEach((p, index) => {
+                        if (p.type === 'previous') {
+                            const bottomY = node.y + CONFIG.cardHeight;
+                            const currentDrop = connectionDrop + (index * partnerStep);
+                            const targetY = bottomY + currentDrop;
+                            const x1 = node.x;
+                            const x2 = p.node.x;
+                            const radius = 10; 
+
+                            ctx.moveTo(x1, bottomY);
+                            ctx.lineTo(x1, targetY - radius);
+                            ctx.quadraticCurveTo(x1, targetY, x1 + radius, targetY);
+                            ctx.lineTo(x2 - radius, targetY);
+                            ctx.quadraticCurveTo(x2, targetY, x2, targetY - radius);
+                            ctx.lineTo(x2, bottomY);
+                            hasDashedPartner = true;
+                        }
+                    });
+                }
+            }
+            if (hasDashedPartner) {
+                ctx.lineWidth = lwPartner;
+                ctx.setLineDash([8 / scale, 6 / scale]);
+                ctx.stroke();
+            }
+
+            // PASS 3: Children (Always Solid)
+            ctx.beginPath();
+            let hasChildConn = false;
+            for (const node of layer.allNodes) {
+                if (node.children && node.children.length > 0) {
+                    node.children.forEach(child => {
+                        const father = child.fid ? this.layoutEngine.nodes.get(child.fid) : null;
+                        const mother = child.mid ? this.layoutEngine.nodes.get(child.mid) : null;
+                        const hasTwoParents = father && mother;
+                        
+                        let anchor = father; // Default
+                        if (hasTwoParents) {
+                            let foundRelationship = false;
+                            if (father.partners) {
+                                const idx = father.partners.findIndex(p => p.node.id == mother.id);
+                                if (idx !== -1) { anchor = father; foundRelationship = true; }
+                            }
+                            if (!foundRelationship && mother.partners) {
+                                const idx = mother.partners.findIndex(p => p.node.id == father.id);
+                                if (idx !== -1) { anchor = mother; foundRelationship = true; }
+                            }
+                        } else if (father && !mother) {
+                            anchor = father;
+                        } else if (!father && mother) {
+                            anchor = mother;
+                        }
+
+                        if (anchor && node.id !== anchor.id) return;
+
+                        let originX = node.x;
+                        let originY = node.y + CONFIG.cardHeight; 
+                        
+                        if (hasTwoParents) {
+                            originX = (father.x + mother.x) / 2;
+                            let pIndex = 0;
+                            if (anchor.partners) {
+                                const other = (anchor.id === father.id) ? mother : father;
+                                const idx = anchor.partners.findIndex(p => p.node.id == other.id);
+                                if (idx !== -1) pIndex = idx;
+                            }
+                            originY = anchor.y + CONFIG.cardHeight + connectionDrop + (pIndex * partnerStep);
+                        }
+                        
+                        const destX = child.x;
+                        const destY = child.y;
+                        const midY = (originY + destY) / 2;
+
+                        ctx.moveTo(originX, originY);
+                        ctx.bezierCurveTo(originX, midY, destX, midY, destX, destY);
+                        hasChildConn = true;
+                    });
+                }
+            }
+            if (hasChildConn) {
+                ctx.lineWidth = lwChild;
+                ctx.setLineDash([]);
+                ctx.stroke();
+            }
+        });
     }
 
     drawTimeline(ctx, h) {
