@@ -106,7 +106,8 @@ class TreeLayout {
         // Safe check for nodes array
         const safeNodes = Array.isArray(nodes) ? nodes : [];
         this.nodes = new Map(safeNodes.map(n => [n.id, { ...n, w: CONFIG.cardWidth, h: CONFIG.cardHeight, x: 0, y: 0, children: [] }]));
-        this.root = null;
+        this.trees = []; // Supports multiple disconnected trees
+        this.root = null; // Main root (first tree)
         this.layers = []; 
         this.bucketSize = 1000; 
         this.maxDepth = 0; 
@@ -150,82 +151,113 @@ class TreeLayout {
             });
         });
 
-        // Identify root (ID 1)
-        this.root = this.nodes.get(1);
-    }
-
-    calculate(ctx) {
-        if (!this.root) return;
-        this.calculateSubtree(this.root, 0, new Set());
+        // IDENTIFY DISCONNECTED TREES (FOREST)
+        const visited = new Set();
         
-        const bounds = this.getBounds();
-        const offsetX = -bounds.minX + 50;
-        const offsetY = 50;
-        
-        this.nodes.forEach(n => {
-            n.x += offsetX;
-            n.y += offsetY;
-        });
-    }
-
-    calculateSubtree(node, depth, visited) {
-        if (visited.has(node.id)) return 0;
-        visited.add(node.id);
-
-        const nodeWidth = CONFIG.cardWidth;
-        let subtreeWidth = 0;
-        
-        // Calculate width of the "Family Unit" (Node + All Partners)
-        const partnerCount = node.partners ? node.partners.length : 0;
-        const selfWidth = nodeWidth + (partnerCount * (nodeWidth + CONFIG.partnerSpacing));
-
-        if (node.children.length === 0) {
-            subtreeWidth = selfWidth;
-        } else {
-            const childGroups = [];
-            let i = 0;
-            const children = node.children;
-            const processedChildren = new Set();
-
-            while (i < children.length) {
-                const child = children[i];
-                if (processedChildren.has(child.id)) { i++; continue; }
+        // Helper to find all connected nodes (Component)
+        const getComponent = (startNode) => {
+            const component = new Set();
+            const stack = [startNode];
+            while(stack.length > 0) {
+                const n = stack.pop();
+                if(component.has(n.id)) continue;
+                component.add(n.id);
                 
-                // Recursively layout child
-                let childW = this.calculateSubtree(child, depth + 1, visited);
-                
-                // Mark child as processed
-                processedChildren.add(child.id);
-                
-                // Also mark child's partners as processed to avoid double counting
-                // (Though layout logic drives primarily from bloodline, so partner checks here are just safety)
-                if (child.partners) {
-                    child.partners.forEach(p => processedChildren.add(p.node.id));
-                }
-
-                childGroups.push({ node: child, width: Math.max(childW, child.w) });
-                i++;
+                // Add neighbors: children, partners, parents
+                n.children.forEach(c => stack.push(c));
+                if(n.partners) n.partners.forEach(p => stack.push(p.node));
+                if(n.fid && this.nodes.has(n.fid)) stack.push(this.nodes.get(n.fid));
+                if(n.mid && this.nodes.has(n.mid)) stack.push(this.nodes.get(n.mid));
             }
+            return component;
+        };
 
-            let totalChildrenWidth = 0;
-            childGroups.forEach((g, idx) => {
-                    totalChildrenWidth += g.width;
-                    if (idx < childGroups.length - 1) totalChildrenWidth += CONFIG.horizontalSpacing;
+        // Scan all nodes to find unconnected components
+        this.nodes.forEach(node => {
+            if (visited.has(node.id)) return;
+            
+            const componentIds = getComponent(node);
+            componentIds.forEach(id => visited.add(id));
+            
+            // Find Root for this specific component
+            // Root is someone with NO parents inside this component
+            let possibleRoots = [];
+            componentIds.forEach(id => {
+                const n = this.nodes.get(id);
+                const hasFather = n.fid && componentIds.has(n.fid);
+                const hasMother = n.mid && componentIds.has(n.mid);
+                if (!hasFather && !hasMother) {
+                    possibleRoots.push(n);
+                }
             });
+            
+            // Heuristic: Prefer ID 1 or lowest ID (usually oldest entry)
+            possibleRoots.sort((a, b) => a.id - b.id);
+            const compRoot = possibleRoots.length > 0 ? possibleRoots[0] : node;
+            
+            this.trees.push({ root: compRoot, ids: componentIds });
+        });
 
-            subtreeWidth = Math.max(selfWidth, totalChildrenWidth);
-        }
-        
-        return subtreeWidth;
+        // Set primary root to first tree's root for legacy/default view
+        if (this.trees.length > 0) this.root = this.trees[0].root;
     }
 
+    // Main Layout Function
     layout() {
-            if (!this.root) return;
-            this.resetPositions();
-            this.maxDepth = 0;
-            this.widths(this.root, 0); 
-            this.layers = []; 
-            this.assignCoordinates(this.root, 0, 0);
+        this.resetPositions();
+        this.layers = []; // Global layers
+        
+        // 1. Calculate stats for each tree (depth, width)
+        let globalMaxDepth = 0;
+        
+        this.trees.forEach(tree => {
+            this.maxDepth = 0; // Reset local max depth tracker
+            this.widths(tree.root, 0);
+            tree.maxDepth = this.maxDepth;
+            tree.width = tree.root._treeWidth;
+            if (tree.maxDepth > globalMaxDepth) globalMaxDepth = tree.maxDepth;
+        });
+        
+        this.maxDepth = globalMaxDepth; // Set global max depth for gap calculations
+        
+        // 2. Position trees side-by-side
+        let currentXCursor = 0;
+        const treeSpacing = 150; // Gap between independent trees
+        
+        this.trees.forEach(tree => {
+            // BOTTOM ALIGNMENT LOGIC:
+            // Shift shallower trees DOWN so their leaves align with the deepest tree.
+            // If GlobalMax=5, TreeMax=3. Tree needs to start at level 2 (5-3).
+            const depthOffset = globalMaxDepth - tree.maxDepth;
+            
+            // Assign coordinates relative to 0
+            this.assignCoordinates(tree.root, 0, 0, depthOffset);
+            
+            // Calculate bounds of this tree to shift it
+            let minX = Infinity, maxX = -Infinity;
+            tree.ids.forEach(id => {
+                const n = this.nodes.get(id);
+                minX = Math.min(minX, n.x - CONFIG.cardWidth/2);
+                maxX = Math.max(maxX, n.x + CONFIG.cardWidth/2);
+            });
+            
+            const treeWidth = maxX - minX;
+            const shiftX = currentXCursor - minX;
+            
+            // Apply Shift to all nodes in this tree
+            tree.ids.forEach(id => {
+                const n = this.nodes.get(id);
+                n.x += shiftX;
+            });
+            
+            currentXCursor += treeWidth + treeSpacing;
+        });
+        
+        // 3. Build Global Spatial Index (Layers)
+        this.nodes.forEach(node => {
+            // Use globalDepth for consistent layer indexing
+            this.addToSpatialIndex(node, node.globalDepth || 0);
+        });
     }
 
     resetPositions() {
@@ -255,10 +287,7 @@ class TreeLayout {
             if(visitedChildren.has(child.id)) continue;
             visitedChildren.add(child.id);
 
-            // Grouping logic for immediate sibling partners isn't strictly necessary 
-            // if we assume tree structure, but good for stability.
-            // Simplified here to just process list.
-            
+            // Mark partners as visited so we don't process them as siblings
             if (child.partners) {
                 child.partners.forEach(p => visitedChildren.add(p.node.id));
             }
@@ -328,30 +357,31 @@ class TreeLayout {
         return results;
     }
 
-    assignCoordinates(node, x, depth) {
+    assignCoordinates(node, x, depth, depthOffset = 0) {
         if(!node) return;
 
-        node.depth = depth;
-        node.y = this.getYForDepth(depth);
+        // Apply global offset to depth so trees align at the bottom
+        const globalDepth = depth + depthOffset;
+        node.depth = depth; // Local depth relative to tree root
+        node.globalDepth = globalDepth; // Global depth for spatial index and drawing layers
+        node.y = this.getYForDepth(globalDepth);
         
         const partnerCount = node.partners ? node.partners.length : 0;
-        // Total block width including all partners
         const blockWidth = CONFIG.cardWidth + (partnerCount * (CONFIG.cardWidth + CONFIG.partnerSpacing));
         
-        // Position Main Node (Leftmost in the block)
-        // x is the center of the subtree area. We shift left to center the whole block.
         node.x = x - (blockWidth / 2) + (CONFIG.cardWidth / 2);
         
-        this.addToSpatialIndex(node, depth);
+        // NOTE: We do NOT add to spatial index here because x will be shifted later.
+        // Spatial indexing happens in layout() after final shifting.
 
-        // Position Partners to the right
         if (node.partners) {
             let currentX = node.x;
             node.partners.forEach(p => {
                 currentX += CONFIG.cardWidth + CONFIG.partnerSpacing;
                 p.node.x = currentX;
                 p.node.y = node.y;
-                this.addToSpatialIndex(p.node, depth);
+                p.node.depth = depth;
+                p.node.globalDepth = globalDepth;
             });
         }
 
@@ -360,7 +390,7 @@ class TreeLayout {
             
             node._childGroups.forEach(group => {
                 const childCenter = currentX + (group.width / 2);
-                this.assignCoordinates(group.node, childCenter, depth + 1);
+                this.assignCoordinates(group.node, childCenter, depth + 1, depthOffset);
                 currentX += group.width + CONFIG.horizontalSpacing;
             });
         }
@@ -1091,7 +1121,8 @@ class TreeRenderer {
                      node.partners.forEach((partner, index) => {
                         // Draw U-shape connection
                         ctx.save();
-                        const nodeDepth = node.depth || 0;
+                        // Use globalDepth for line thickness consistency
+                        const nodeDepth = node.globalDepth || 0;
                         const baseThick = Math.max(1.5, 5 - nodeDepth * 0.5); 
                         ctx.lineWidth = getLineWidth(baseThick);
                         
