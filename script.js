@@ -932,6 +932,9 @@ class TreeRenderer {
 
         if (visibleNodes.length === 0) return;
 
+        // --- BUG FIX: Reset Dash ---
+        ctx.setLineDash([]);
+
         // --- BATCH 1: Backgrounds ---
         ctx.fillStyle = CONFIG.defaultColor;
         
