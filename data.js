@@ -209,7 +209,7 @@ const rawNodes = [
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
 		{ id: 318, fid: 317, name: "ბასა", death: '1???' },
 		{ id: 319, fid: 317, name: "ანდრია", death: '1???' },
-		{ id: 320, fid: 318, name: "სანდრო", death: '1???' },
+		{ id: 320, fid: 318, name: "სანდრო", death: '1957', pid: 455 }, // 1957 წლის 14 მარტის კომუნისტი. https://dspace.nplg.gov.ge/bitstream/1234/409699/1/Komunisti_1957_N62.pdf
 		{ id: 321, fid: 318, name: "სალომე", death: '1???' },
 		{ id: 322, fid: 318, name: "ფარნა", death: '1949', pid: 452 },
 		{ id: 323, fid: 319, name: "პეტრე", death: '1???', pid: 454 },
@@ -343,6 +343,7 @@ const rawNodes = [
 		{ id: 452, name: "ოლღა", lastname: "-???-", death: '19??' },
 		{ id: 453, name: "ანიჩკა", lastname: "-???-", death: '19??' },
 		{ id: 454, name: "ციცინო", lastname: "-???-", death: '19??' },
+		{ id: 455, name: "მარიამი", lastname: "-???-", death: '19??' },
 		
 
 		
