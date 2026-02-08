@@ -16,7 +16,7 @@ const rawNodes = [
 		{ id:  13, name: "ფატი", death: '????', pid: 171, fid: 9, mid: 180 },
 		{ id:  14, name: "ვასილი", birth: 1888, pid: 131, fid: 11, mid: 213 },
 		{ id:  15, name: "ივანე", birth: 1895, death: 1977, pid: 205, fid: 11, mid: 213, profession: "დურგალი", image: "ivane.jpg" },
-		{ id:  16, name: "გიორგი", birth: 1900, death: '19??', pid: 134, fid: 11, mid: 213 },
+		{ id:  16, name: "გიორგი", birth: 1900, death: 1933, pid: 134, fid: 11, mid: 213 }, // https://dspace.nplg.gov.ge/bitstream/1234/334795/1/Komunisti_1933_N271.pdf
 		{ id:  17, name: "ელპიტი", birth: 1890, death: '19??', fid: 11, mid: 213 },
 		{ id: 205, name: "ანეტა", lastname: "მაკალათია", birth: 1905, death: 1988, profession: "დიასახლისი", image: "aneta_makalatia.jpg" },
 		{ id:  18, name: "ვალოდია", death: '????', mid: 131, fid: 14 },
@@ -113,7 +113,7 @@ const rawNodes = [
 		{ id:  97, name: "ქეთევანი", birth: 1953, fb: "profile.php?id=61550006810308", pid: 126, fid: 91, mid: 124, profession: "მუსიკოსი", image: "ketevani.jpg" },
 		{ id:  98, name: "ჟორა", birth: 1919, death:1942, fid: 77, mid: 140, profession: "სამხედრო (მფრინავი)WW2" },
 		{ id:  99, name: "მიშა", birth: 1917, death:1943, fid: 77, mid: 140, profession: "სამხედრო WW2" },
-		{ id: 100, name: "ვენერა", fid: 77, mid: 140 },
+		{ id: 100, name: "ვენერა", death: 1939, fid: 77, mid: 140 }, // https://dspace.nplg.gov.ge/bitstream/1234/339797/1/Komunisti_1939_N151.pdf
 		{ id: 101, name: "თამარი", pid: 147, fid: 78, mid: 154 },
 		{ id: 102, name: "ზურაბი", pid: 156, fid: 78, mid: 155, image: "zurabi.jpg" },
 		{ id: 103, name: "მირიანი", pid: 168, fid: 102, mid: 156, image: "miriani.jpg" },
@@ -179,7 +179,7 @@ const rawNodes = [
 		{ id: 167, name: "ჟიგული", lastname: "პერტენავა", birth: 1931, death: '193?', mid: 87, fid: 166, image: "jiguli_pertenava.jpg" },
 		{ id: 168, name: "ლია", lastname: "ჩუბინიძე"},
 		{ id: 169, name: "ნინელი", lastname: "იაშვილი", death: '????', mid: 101, fid: 147 },
-		{ id: 170, name: "???", lastname: "კაჭარავა", death: '1???' },
+		{ id: 170, name: "ვასილი", lastname: "კაჭარავა", death: '1???' }, // მოხსენიებულია როგორც ბიძა https://dspace.nplg.gov.ge/bitstream/1234/334795/1/Komunisti_1933_N271.pdf
 		{ id: 171, name: "ბახვა", lastname: "კუპრაშვილი", death: '1???' },
 		{ id: 172, name: "???", lastname: "თაფლაძე", death: '1???' },
 		{ id: 173, name: "გრიშა", lastname: "თაფლაძე", mid: 43, fid: 172 },
@@ -203,6 +203,12 @@ const rawNodes = [
 		{ id: 191, name: "ნაირა", lastname: "შარუხია", birth: 1957, mid: 89, fid: 188, fb: "naira.sharukhia", image: "naira_sharukhia.jpg" },
 		{ id: 192, name: "ემილია", lastname: "___", birth: 2007, mid: 58 },
 		{ id: 193, name: "პეტრე", lastname: "___", birth: 2011, mid: 58 },
+		{ id: 194, name: "ვერა", lastname: "კაჭარავა", death: '19??', mid: 12, fid: 170 },
+		{ id: 195, name: "პელაგია", lastname: "კაჭარავა", death: '19??', mid: 12, fid: 170 },
+		{ id: 196, name: "ბაბილინა", lastname: "კაჭარავა", death: '19??', mid: 12, fid: 170 },
+		{ id: 197, name: "ნოე", lastname: "კაჭარავა", death: '19??', mid: 12, fid: 170 },
+		{ id: 198, name: "დავითი", lastname: "კაჭარავა", death: '19??', mid: 12, fid: 170 },
+		
 		/* id: 194 used little bit up*/
 		
 		
@@ -344,6 +350,9 @@ const rawNodes = [
 		{ id: 453, name: "ანიჩკა", lastname: "-???-", death: '19??' },
 		{ id: 454, name: "ციცინო", lastname: "-???-", death: '19??' },
 		{ id: 455, name: "მარიამი", lastname: "-???-", death: '19??' },
+		{ id: 456, name: "-???-", death: '19??', fid: 320, mid: 455, pid: 457 },
+		{ id: 457, name: "ოლღა", lastname: "-???-", death: '19??' },
+		
 		
 
 		
