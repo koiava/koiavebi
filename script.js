@@ -445,12 +445,53 @@ class TreeRenderer {
 
     init() {
         this.layoutEngine.layout();
+        
+        // --- PRE-COMPUTE TEXT ---
+        this.precomputeLabels();
+        // ------------------------
+        
         this.bindEvents();
         this.resize();
         
         requestAnimationFrame(() => this.loop());
         const loadingEl = document.getElementById('loading');
         if(loadingEl) loadingEl.style.opacity = 0;
+    }
+    
+    // Calculate truncated text strings ONCE at startup to avoid measureText in the render loop
+    precomputeLabels() {
+        const maxWidth = CONFIG.cardWidth - 10;
+        
+        // Helper function for truncation logic
+        const fit = (text, widthLimit) => {
+            if (this.ctx.measureText(text).width <= widthLimit) return text;
+            let ellipsis = '...';
+            let truncated = text;
+            while (truncated.length > 0 && this.ctx.measureText(truncated + ellipsis).width > widthLimit) {
+                truncated = truncated.slice(0, -1);
+            }
+            return truncated + ellipsis;
+        };
+
+        this.ctx.save();
+
+        // 1. Process Names
+        this.ctx.font = CONFIG.fontMain;
+        this.layoutEngine.nodes.forEach(node => {
+            const lastName = node.lastname || 'ქოიავა';
+            node._fullName = `${lastName} ${node.name}`; // Store full name
+            node._fittedName = fit(node._fullName, maxWidth); // Store fitted name
+        });
+
+        // 2. Process Professions
+        this.ctx.font = CONFIG.fontSub;
+        this.layoutEngine.nodes.forEach(node => {
+            if (node.profession) {
+                node._fittedProf = fit(node.profession, maxWidth);
+            }
+        });
+
+        this.ctx.restore();
     }
 
     // New Helper: Manage Interaction State
@@ -857,24 +898,6 @@ class TreeRenderer {
         
         ctx.restore();
     }
-    
-    getFittedText(ctx, node, type, text, maxWidth) {
-        const cacheKey = `_fit_${type}`;
-        if (node[cacheKey] !== undefined) return node[cacheKey];
-
-        let width = ctx.measureText(text).width;
-        let result = text;
-        if (width > maxWidth) {
-            let ellipsis = '...';
-            let truncated = text;
-            while (ctx.measureText(truncated + ellipsis).width > maxWidth && truncated.length > 0) {
-                truncated = truncated.slice(0, -1);
-            }
-            result = truncated + ellipsis;
-        }
-        node[cacheKey] = result;
-        return result;
-    }
 
     drawNodes(ctx) {
         const halfW = CONFIG.cardWidth / 2;
@@ -1096,19 +1119,9 @@ class TreeRenderer {
         ctx.fillStyle = CONFIG.textColor;
         ctx.font = CONFIG.fontMain;
         
-        const maxWidth = CONFIG.cardWidth - 10;
-        let nameText;
+        // Use precomputed names. If hovered, show the full name, otherwise use the fitted (truncated) one
+        const nameText = (node === this.hoveredNode) ? node._fullName : node._fittedName;
 
-        // Construct full name with default last name
-        const lastName = node.lastname || 'ქოიავა';
-        const fullName = `${lastName} ${node.name}`;
-
-        if (node === this.hoveredNode) {
-            nameText = fullName;
-        } else {
-            // Use fullName for fitting, but keep 'name' key since it represents the name slot
-            nameText = this.getFittedText(ctx, node, 'name', fullName, maxWidth);
-        }
         ctx.fillText(nameText, textCenterX, textY);
         
         // Facebook Icon
@@ -1123,12 +1136,9 @@ class TreeRenderer {
             ctx.fillStyle = "#666";
             ctx.font = CONFIG.fontSub;
             
-            let profText;
-            if (node === this.hoveredNode) {
-                profText = node.profession;
-            } else {
-                profText = this.getFittedText(ctx, node, 'prof', node.profession, maxWidth);
-            }
+            // Use precomputed profession
+            const profText = (node === this.hoveredNode) ? node.profession : node._fittedProf;
+            
             ctx.fillText(profText, textCenterX, textY);
             
             textY += 16;
