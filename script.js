@@ -429,6 +429,12 @@ class TreeRenderer {
         this.isDragging = false;
         this.lastPos = { x: 0, y: 0 };
         this.lastPinchDist = 0; 
+        
+        // Animation State
+        this.animation = null;
+
+        // Timeline Cache
+        this.timelineAverages = new Map();
 
         // --- PERFORMANCE OPTIMIZATION: INTERACTION STATE ---
         this.isInteracting = false;
@@ -449,6 +455,10 @@ class TreeRenderer {
         // --- PRE-COMPUTE TEXT ---
         this.precomputeLabels();
         // ------------------------
+        
+        // --- PRE-COMPUTE TIMELINE ---
+        this.precomputeTimeline();
+        // ----------------------------
         
         this.bindEvents();
         this.resize();
@@ -492,6 +502,31 @@ class TreeRenderer {
         });
 
         this.ctx.restore();
+    }
+
+    // New: Calculate timeline levels once at startup
+    precomputeTimeline() {
+        const levels = new Map();
+        
+        // 1. Group by Y level
+        this.layoutEngine.nodes.forEach(n => {
+            const lvl = Math.round(n.y);
+            if (!levels.has(lvl)) {
+                levels.set(lvl, []);
+            }
+            if (n.birth && typeof n.birth === 'number') {
+                levels.get(lvl).push(n.birth);
+            }
+        });
+
+        // 2. Calculate averages and store in this.timelineAverages
+        this.timelineAverages.clear();
+        levels.forEach((births, lvl) => {
+            if (births.length > 0) {
+                const avg = Math.round(births.reduce((a,b)=>a+b,0)/births.length);
+                this.timelineAverages.set(lvl, avg);
+            }
+        });
     }
 
     // New Helper: Manage Interaction State
@@ -624,6 +659,9 @@ class TreeRenderer {
     }
 
     startDrag(x, y) {
+        // Stop any ongoing animation if user interacts
+        if (this.animation) this.animation.active = false;
+        
         this.isDragging = true;
         this.lastPos = { x, y };
         this.canvas.style.cursor = 'grabbing';
@@ -699,6 +737,9 @@ class TreeRenderer {
     }
 
     zoom(e) {
+        // Stop any ongoing animation if user interacts
+        if (this.animation) this.animation.active = false;
+
         e.preventDefault();
         this.setInteraction(true); // Signal interaction
         
@@ -770,20 +811,42 @@ class TreeRenderer {
         }
     }
 
-    selectNode(node) {
+    selectNode(node, animate = true) {
         this.selectedNodeId = node.id;
         
         const targetScale = 2.5; 
         const rect = this.canvas.getBoundingClientRect();
         
-        this.transform.k = targetScale;
-        this.transform.x = (rect.width / 2) - (node.x * targetScale);
-        this.transform.y = (rect.height / 2) - ((node.y + CONFIG.cardHeight / 2) * targetScale);
+        // Calculate target transform to center the node
+        const targetX = (rect.width / 2) - (node.x * targetScale);
+        const targetY = (rect.height / 2) - ((node.y + CONFIG.cardHeight / 2) * targetScale);
         
         const url = new URL(window.location);
         url.searchParams.set('id', node.id);
         window.history.replaceState({}, '', url);
 
+        if (animate) {
+            this.animateTo(targetX, targetY, targetScale, 1000);
+        } else {
+            this.transform.x = targetX;
+            this.transform.y = targetY;
+            this.transform.k = targetScale;
+            this.requestRender();
+        }
+    }
+
+    animateTo(tx, ty, tk, duration = 1000) {
+        this.animation = {
+            startX: this.transform.x,
+            startY: this.transform.y,
+            startK: this.transform.k,
+            targetX: tx,
+            targetY: ty,
+            targetK: tk,
+            startTime: performance.now(),
+            duration: duration,
+            active: true
+        };
         this.requestRender();
     }
 
@@ -829,6 +892,27 @@ class TreeRenderer {
 
     loop() {
         this.ticking = false;
+        
+        // --- ANIMATION UPDATE ---
+        if (this.animation && this.animation.active) {
+            const now = performance.now();
+            const elapsed = now - this.animation.startTime;
+            const progress = Math.min(elapsed / this.animation.duration, 1.0);
+            
+            // EaseOutCubic: 1 - (1-t)^3
+            const ease = 1 - Math.pow(1 - progress, 3);
+            
+            this.transform.x = this.animation.startX + (this.animation.targetX - this.animation.startX) * ease;
+            this.transform.y = this.animation.startY + (this.animation.targetY - this.animation.startY) * ease;
+            this.transform.k = this.animation.startK + (this.animation.targetK - this.animation.startK) * ease;
+            
+            if (progress >= 1.0) {
+                this.animation.active = false;
+            } else {
+                this.requestRender();
+            }
+        }
+        
         const ctx = this.ctx;
         const width = this.canvas.width / (window.devicePixelRatio||1);
         const height = this.canvas.height / (window.devicePixelRatio||1);
@@ -898,6 +982,8 @@ class TreeRenderer {
         
         ctx.restore();
     }
+    
+    // REMOVED getFittedText - Logic moved to precomputeLabels
 
     drawNodes(ctx) {
         const halfW = CONFIG.cardWidth / 2;
@@ -916,8 +1002,9 @@ class TreeRenderer {
             else if (scale < 0.3) lod = 1; 
         }
 
-        // Only use high res images if static and really close (disabled during interaction on mobile)
-        const useHighRes = (!this.isInteracting || !this.isMobile) && scale > 1.2;
+        // Only use high res images if static and really close
+        // CHANGED: Disable High Res during ANY interaction to prevent freeze/white screen during fast panning
+        const useHighRes = !this.isInteracting && scale > 1.2;
 
         const viewL = -this.transform.x / scale;
         const viewT = -this.transform.y / scale;
@@ -1174,9 +1261,18 @@ class TreeRenderer {
         const viewW = this.canvas.width / (window.devicePixelRatio||1) / scale;
         const viewH = this.canvas.height / (window.devicePixelRatio||1) / scale;
         const viewB = viewT + viewH;
+        const viewR = viewL + viewW; // Calculate Right bound
         
         const connectionDrop = 25; // Base Distance
         const partnerStep = 20;     // Extra distance per partner index
+
+        // Culling Padding (to ensure lines entering from side are drawn)
+        const padding = CONFIG.cardWidth * 2; 
+        const activeL = viewL - padding;
+        const activeR = viewR + padding;
+
+        const minBucket = Math.floor(activeL / this.layoutEngine.bucketSize);
+        const maxBucket = Math.floor(activeR / this.layoutEngine.bucketSize);
 
         // Iterate through layers
         this.layoutEngine.layers.forEach((layer, depth) => {
@@ -1192,10 +1288,27 @@ class TreeRenderer {
             const childThick = Math.max(1.5, 8 - (depth + 1) * 0.7);
             const lwChild = getLineWidth(childThick);
 
+            // GATHER NODES TO PROCESS (Spatial Culling)
+            const nodesToProcess = [];
+            for (let b = minBucket; b <= maxBucket; b++) {
+                const bucket = layer.buckets.get(b);
+                if (bucket) {
+                    for (const node of bucket) {
+                        // Check if node is within active horizontal range
+                        // We check center point against active range for simplicity
+                        if (node.x >= activeL && node.x <= activeR) {
+                            nodesToProcess.push(node);
+                        }
+                    }
+                }
+            }
+            
+            if (nodesToProcess.length === 0) return;
+
             // PASS 1: Solid Partners
             ctx.beginPath();
             let hasSolidPartner = false;
-            for (const node of layer.allNodes) {
+            for (const node of nodesToProcess) {
                 if (node.partners) {
                     node.partners.forEach((p, index) => {
                         if (p.type !== 'previous') {
@@ -1226,7 +1339,7 @@ class TreeRenderer {
             // PASS 2: Dashed Partners
             ctx.beginPath();
             let hasDashedPartner = false;
-            for (const node of layer.allNodes) {
+            for (const node of nodesToProcess) {
                 if (node.partners) {
                     node.partners.forEach((p, index) => {
                         if (p.type === 'previous') {
@@ -1257,7 +1370,7 @@ class TreeRenderer {
             // PASS 3: Children (Always Solid)
             ctx.beginPath();
             let hasChildConn = false;
-            for (const node of layer.allNodes) {
+            for (const node of nodesToProcess) {
                 if (node.children && node.children.length > 0) {
                     node.children.forEach(child => {
                         const father = child.fid ? this.layoutEngine.nodes.get(child.fid) : null;
@@ -1316,29 +1429,19 @@ class TreeRenderer {
     }
 
     drawTimeline(ctx, h) {
-        const levels = {};
-        this.layoutEngine.nodes.forEach(n => {
-                const lvl = Math.round(n.y);
-                if (!levels[lvl]) levels[lvl] = [];
-                if (n.birth && typeof n.birth === 'number') levels[lvl].push(n.birth);
-        });
-
         ctx.save();
         ctx.fillStyle = "rgba(0,0,0,0.5)";
         ctx.font = "bold 12px Arial";
         
-        Object.keys(levels).forEach(yPos => {
-            const births = levels[yPos];
-            if (births.length > 0) {
-                const avg = Math.round(births.reduce((a,b)=>a+b,0)/births.length);
-                const screenY = (parseInt(yPos) * this.transform.k) + this.transform.y;
-                
-                if (screenY > 0 && screenY < h) {
-                    ctx.fillText(avg, 20, screenY);
-                    ctx.fillRect(10, screenY, 5, 1);
-                }
-            }
+        // Use Precomputed Timeline Data
+        this.timelineAverages.forEach((avg, yPos) => {
+             const screenY = (parseInt(yPos) * this.transform.k) + this.transform.y;
+             if (screenY > 0 && screenY < h) {
+                 ctx.fillText(avg, 20, screenY);
+                 ctx.fillRect(10, screenY, 5, 1);
+             }
         });
+        
         ctx.restore();
     }
 }
@@ -1365,7 +1468,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nodeId = parseInt(idParam);
         const node = appInstance.layoutEngine.nodes.get(nodeId);
         if (node) {
-            appInstance.selectNode(node);
+            appInstance.selectNode(node, false); // No animation on initial load
         }
     } else {
         appInstance.fitToScreen();
