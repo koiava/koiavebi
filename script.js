@@ -1296,21 +1296,47 @@ class TreeRenderer {
             const lwChild = getLineWidth(childThick);
 
             // GATHER NODES TO PROCESS (Spatial Culling)
-            const nodesToProcess = [];
+            // Use a Set to ensure uniqueness when adding parents of visible children
+            const nodesToProcess = new Set();
+
+            // 1. Add visible nodes from current layer
             for (let b = minBucket; b <= maxBucket; b++) {
                 const bucket = layer.buckets.get(b);
                 if (bucket) {
                     for (const node of bucket) {
                         // Check if node is within active horizontal range
-                        // We check center point against active range for simplicity
                         if (node.x >= activeL && node.x <= activeR) {
-                            nodesToProcess.push(node);
+                            nodesToProcess.add(node);
+                        }
+                    }
+                }
+            }
+
+            // 2. Check visible children in next layer to ensure their parents are processed
+            // (Fixes disappearing curves when parent is off-screen but child is visible)
+            const nextLayer = this.layoutEngine.layers[depth + 1];
+            if (nextLayer) {
+                for (let b = minBucket; b <= maxBucket; b++) {
+                    const bucket = nextLayer.buckets.get(b);
+                    if (bucket) {
+                        for (const child of bucket) {
+                            if (child.x >= activeL && child.x <= activeR) {
+                                // Force add parents to processing set so their outgoing lines are drawn
+                                if (child.fid) {
+                                    const father = this.layoutEngine.nodes.get(child.fid);
+                                    if (father) nodesToProcess.add(father);
+                                }
+                                if (child.mid) {
+                                    const mother = this.layoutEngine.nodes.get(child.mid);
+                                    if (mother) nodesToProcess.add(mother);
+                                }
+                            }
                         }
                     }
                 }
             }
             
-            if (nodesToProcess.length === 0) return;
+            if (nodesToProcess.size === 0) return;
 
             // PASS 1: Solid Partners
             ctx.beginPath();
