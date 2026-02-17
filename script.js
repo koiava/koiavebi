@@ -335,8 +335,15 @@ class TreeLayout {
 
     getNodesInRect(x, y, width, height) {
         const results = [];
-        const minBucket = Math.floor(x / this.bucketSize);
-        const maxBucket = Math.floor((x + width) / this.bucketSize);
+        
+        // Expand search range by half-width to catch nodes whose centers are in adjacent buckets
+        // but whose bodies overlap into the query rect.
+        const hw = CONFIG.cardWidth / 2;
+        const searchX = x - hw;
+        const searchW = width + CONFIG.cardWidth; 
+
+        const minBucket = Math.floor(searchX / this.bucketSize);
+        const maxBucket = Math.floor((searchX + searchW) / this.bucketSize);
 
         this.layers.forEach(layer => {
             if (!layer) return;
@@ -346,8 +353,8 @@ class TreeLayout {
                 const bucket = layer.buckets.get(b);
                 if (bucket) {
                     for (const node of bucket) {
-                         const hw = CONFIG.cardWidth / 2;
-                         if (node.x + hw >= x && node.x - hw <= x + width) {
+                         const nodeHw = CONFIG.cardWidth / 2;
+                         if (node.x + nodeHw >= x && node.x - nodeHw <= x + width) {
                              results.push(node);
                          }
                     }
