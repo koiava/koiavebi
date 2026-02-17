@@ -151,8 +151,8 @@ const rawNodes = [
 		{ id: 139, name: "ქეთევანი", birth: 1955, fb: "ketevan.koiava", mid: 141, fid: 111, profession: "გეოლოგი", image: "ketevani_2.jpg" },
 		{ id: 140, name: "საშა", lastname: "კუცია", death: '19??', image: "sasha_kutsia.jpg" },
 		{ id: 141, name: "ნათელა", lastname: "პატარაია", image: "natela_pataraia.jpg" },
-		{ id: 142, name: "კახა", lastname: "გიორგობიანი", birth: 1976, fb: "kaxa.giorgobiani.5", mid: 206, fid: 32, image: "kakha_giorgobiani.jpg" },
-		{ id: 143, name: "თეა", lastname: "გიორგობიანი", birth: 1975, fb: "tea.giorgobiani.1", mid: 206, fid: 32, image: "tea_giorgobiani.jpg" },
+		{ id: 142, name: "კახა", lastname: "გიორგობიანი", birth: 1976, mid: 206, fid: 32, pid: 250, fb: "kaxa.giorgobiani.5", profession: "იურისტი/ტაქსისტი", image: "kakha_giorgobiani.jpg" },
+		{ id: 143, name: "თეა", lastname: "გიორგობიანი", birth: 1975, mid: 206, fid: 32, pid: 252, fb: "tea.giorgobiani.1", image: "tea_giorgobiani.jpg" },
 		{ id: 144, name: "მარიკა", lastname: "ხურცილავა", birth: 1990, fb: "mariam.khurtsilava.1", profession: "მოცეკვავე", mid: 34, fid: 210, image: "marika_khurtsilava.jpg" },
 		{ id: 145, name: "მამუკა", lastname: "ხურცილავა", birth: 1991, fb: "bkhurtsilava", profession: "რეაბილიტოლოგი", mid: 34, fid: 210, image: "mamuka_khurtsilava.jpg" },
 		{ id: 146, name: "ნუცა", lastname: "იაგანაშვილი", birth: 2021, mid: 27, fid: 212, image: "nutsa_iaganashvili.jpg" },
@@ -170,7 +170,7 @@ const rawNodes = [
 		{ id: 158, name: "ნონა", lastname: "კიკაჩეიშვილი", birth: 1977, fb: "cikarishvili.tinka", mid: 97, fid: 126, image: "nona_kikacheishvili.jpg" },
 		{ id: 159, name: "აკაკი", lastname: "შარაშენიძე", birth: 1983, fb: "akaki.x", mid: 96, fid: 125, image: "akaki_sharashenidze.jpg" },
 		{ id: 160, name: "გოგა", lastname: "შარაშენიძე", birth: 1987, fb: "goga.sharashenidze.52", mid: 96, fid: 125, image: "goga_sharashenidze.jpg" },
-		{ id: 161, name: "იაგო", lastname: "ჭანტურია", birth: 1951, mid: 23, fid: 211, profession: "ბუღალტერი" ,image: "iago_chanturia.jpg" },
+		{ id: 161, name: "იაგო", lastname: "ჭანტურია", birth: 1951, mid: 23, fid: 211, pid: 260, profession: "ბუღალტერი" ,image: "iago_chanturia.jpg" },
 		{ id: 162, name: "სოსო", lastname: "ჭანტურია", birth: 1948, mid: 23, fid: 211, profession: "Taxi" },
 		{ id: 163, name: "გოგი", lastname: "ფანცულაია", death: '20??', mid: 90, fid: 123, image: "gogi_pantsulaia.jpg" },
 		{ id: 164, name: "ზურაბი", lastname: "ფანცულაია", mid: 90, fid: 123 },
@@ -208,8 +208,23 @@ const rawNodes = [
 		{ id: 196, name: "ბაბილინა", lastname: "კაჭარავა", death: '19??', mid: 12, fid: 170 },
 		{ id: 197, name: "ნოე", lastname: "კაჭარავა", death: '19??', mid: 12, fid: 170 },
 		{ id: 198, name: "დავითი", lastname: "კაჭარავა", death: '19??', mid: 12, fid: 170 },
+		{ id: 250, name: "ლელა", lastname: "კოპალიანი", birth: 1974, fb: "lela.kopaliani.355", profession: "მენეჯერი", image: "lela_kopaliani.jpg" },
+		{ id: 251, name: "ტასო", lastname: "გიორგობიანი", birth: 2018, mid: 250, fid: 142, image: "taso_giorgobiani.jpg" },
+		{ id: 252, name: "ელგუჯა", lastname: "პაპავა", birth: 1974, fb: "elguja.papava.1", profession: "ვეტერანი ფეხბურთელი", image: "elguja_papava.jpg" },
+		{ id: 253, name: "რევაზი", lastname: "პაპავა", birth: 2005, mid: 143, fid: 252, fb: "rezzkap", image: "rezi_papava.jpg" },
+		{ id: 254, name: "ელენე", lastname: "პაპავა", birth: 2006, mid: 143, fid: 252, fb: "elene.papava.857011", image: "elene_papava.jpg" },
 		
-		/* id: 194 used little bit up*/
+
+		
+		{ id: 255, name: "ლაშა", lastname: "ჭანტურია", birth: 1976, fid: 162, pid: 256, fb: "lasha.chanturia.77", image: "lasha_chanturia.jpg" },
+		{ id: 256, name: "ნათია", lastname: "ჩქოფოია", birth: 1983, fb: "natushkebi.ch", image: "natia_chqofoia.jpg" },
+		{ id: 257, name: "ეკა", lastname: "ჭანტურია", birth: 1978, fid: 162, fb: "ek.a.ch.ant.uria.861106", image: "eka_chanturia.jpg" },
+		{ id: 258, name: "ლუკა", lastname: "ჭანტურია", birth: 2012, fid: 255, mid: 256, image: "luka_chanturia.jpg" },
+		{ id: 259, name: "ლაზარე", lastname: "ჭანტურია", birth: 2018, fid: 255, mid: 256, image: "lazare_chanturia.jpg" },
+		{ id: 260, name: "ლია", lastname: "ხაბეიშვილი", birth: 1959, fb: "lia.xabeishvili",  image: "lia_khabeishvili.jpg" },
+		{ id: 261, name: "ბელა", lastname: "ჭანტურია", birth: 1981, fid: 161, mid: 260, fb: "bela.chanturia.5", image: "bela_chanturia.jpg" },
+		{ id: 262, name: "ნათია", lastname: "ჭანტურია", birth: 1983, fid: 161, mid: 260, fb: "anastasia.andria.7", image: "natia_chanturia.jpg" },
+		{ id: 263, name: "თამუნა", lastname: "ჭანტურია", birth: '19??', fid: 161, mid: 260, fb: "tamuna.chanturia.5836", image: "tamuna_chanturia.jpg" },
 		
 		
 		{ id: 317, fid: 4, name: "დუტუ?", death: '1???' },
@@ -512,6 +527,40 @@ const rawNodes = [
 		{ id: 3045, name: "დალი", fid: 3032 },
 		{ id: 3046, name: "ეკატერინე", lastname: "ლებანიძე", fb: "ekaterina.lebanidze", image: "ekaterine_lebanidze.jpg" },
 		{ id: 3045, name: "ვახო", lastname: "ანთია", mid: 3006, fid: 3007 },
+
+
+
+		// Te be clerified
+		{ id: 4005, name: "პავლე", death: '1???', pid: 4006, profession: "მღვდელი - დიაკონი" },
+		{ id: 4006, name: "ეფროსიმე", lastname: "კვირკველია", death: '1???' },
+		{ id: 4007, name: "ავქსენტი", death: '1932', fid: 4005, mid: 4006 },
+		{ id: 4008, name: "რომანოზი", death: '19??', fid: 4005, mid: 4006 },
+		{ id: 4009, name: "მიხეილი", death: '19??', fid: 4005, mid: 4006 },
+		{ id: 4011, name: "გიორგი(იობი)", birth: 1905, death: '1973', fid: 4005, mid: 4006, pid: 4035, profession: "ექიმი", image: "giorgi.jpg" },
+		{ id: 4012, name: "ევგენი", death: '19??', fid: 4005, mid: 4006 },
+		{ id: 4013, name: "ჟორა", death: '1???', fid: 4007 },
+		{ id: 4014, name: "შორენა", fid: 4013 },
+		{ id: 4015, name: "ვახტანგი", death: '1???', fid: 4013 },
+		{ id: 4016, name: "ლიანა", death: '1???', fid: 4011, mid: 4035, pid: 4019, image: "liana.jpg" },
+		{ id: 4017, name: "ლონდა", death: '1???', fid: 4011, mid: 4035, pid: 4018, image: "londa.jpg" },
+		{ id: 4018, name: "-???-", lastname: "ჩილაჩავა" },
+		{ id: 4019, name: "-???-", lastname: "უჩანეიშვილი" },
+		{ id: 4020, name: "ლამარა", fid: 4011, mid: 4035, pid: 4031, fb: "lamari.qoiava", image: "lamara.jpg" },
+		{ id: 4021, name: "ეკა", lastname: "უჩანეიშვილი", mid: 4016, fid: 4019, pid:4022, fb: "eka.uchaneishvili.3", image: "eka_uchaneishvili.jpg" },
+		{ id: 4022, name: "-??-", lastname: "კვაჭაძე" },
+		{ id: 4023, name: "ელენე", lastname: "კვაჭაძე", mid: 4022, fid: 4021 },
+		{ id: 4024, name: "ნინუცა", lastname: "კვაჭაძე", birth: 2004, mid: 4022, fid: 4021, image: "ninutsa_kvatchadze.jpg" },
+		{ id: 4025, name: "კონსტანტინე", lastname: "ჩილაჩავა", mid: 4017, fid: 4018 },
+		{ id: 4026, name: "გიგი", lastname: "ჩილაჩავა", death: '1???', mid: 4017, fid: 4018, image: "gigi_chilachava.jpg" },
+		{ id: 4027, name: "ლონდა", lastname: "ჩილაჩავა", fid: 4025 },
+		{ id: 4028, name: "მარიამი", lastname: "ჩილაჩავა", fid: 4025 },
+		{ id: 4029, name: "ნოდარი", lastname: "სანაძე", mid: 4027 },
+		{ id: 4030, name: "კახაბერ", lastname: "ლეთოდიანი", mid: 4028 },
+		{ id: 4031, name: "გიზო", lastname: "ჩხაიძე", image: "gizo_chkhaidze.jpg" },
+		{ id: 4032, name: "მიხეილ", lastname: "ჩხაიძე", birth: 1986, mid: 4020, fid: 4031, image: "misho_chkhaidze.jpg" },
+		{ id: 4033, name: "თამთა", lastname: "ჩილაჩავა", fid: 4026 },
+		{ id: 4034, name: "ლიკა", lastname: "ჩილაჩავა", fid: 4026 },
+		{ id: 4035, name: "ცაცა", lastname: "ბახტაძე", death: '19??', profession: "ექიმი", image: "caca_bakhtadze.jpg" },
 
 
 
