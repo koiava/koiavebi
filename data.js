@@ -542,13 +542,13 @@ const rawNodes = [
 		{ id: 4005, name: "პავლე", death: '1???', pid: 4006, profession: "მღვდელი - დიაკონი" },
 		{ id: 4006, name: "ეფროსიმე", lastname: "კვირკველია", death: '1???' },
 		{ id: 4007, name: "ავქსენტი", death: '1932', fid: 4005, mid: 4006 },
-		{ id: 4008, name: "რომანოზი", death: '19??', fid: 4005, mid: 4006 },
+		{ id: 4008, name: "რომანოზი", death: '1962', fid: 4005, mid: 4006, profession: "ფინანსისტი" },
 		{ id: 4009, name: "მიხეილი", death: '19??', fid: 4005, mid: 4006 },
 		{ id: 4011, name: "გიორგი(იობი)", birth: 1905, death: '1973', fid: 4005, mid: 4006, pid: 4035, profession: "ექიმი", image: "giorgi.jpg" },
 		{ id: 4012, name: "ევგენი", death: '19??', fid: 4005, mid: 4006 },
-		{ id: 4013, name: "ჟორა", death: '1???', fid: 4007 },
-		{ id: 4014, name: "შორენა", fid: 4013 },
-		{ id: 4015, name: "ვახტანგი", death: '1???', fid: 4013 },
+		{ id: 4013, name: "ჟორა", death: '1???', fid: 4007, pid: 4036 },
+		{ id: 4014, name: "შორენა", fid: 4013, mid: 4036 },
+		{ id: 4015, name: "ვახტანგი", death: '1???', fid: 4013, mid: 4036 },
 		{ id: 4016, name: "ლიანა", birth: 1942, death: '1???', fid: 4011, mid: 4035, pid: 4019, image: "liana.jpg" },
 		{ id: 4017, name: "ლონდა", birth: 1943, death: '1???', fid: 4011, mid: 4035, pid: 4018, image: "londa.jpg" },
 		{ id: 4018, name: "თენგიზი", lastname: "ჩილაჩავა", birth: 1939 },
@@ -569,6 +569,7 @@ const rawNodes = [
 		{ id: 4033, name: "თამთა", lastname: "ჩილაჩავა", fid: 4026 },
 		{ id: 4034, name: "ლიკა", lastname: "ჩილაჩავა", fid: 4026 },
 		{ id: 4035, name: "ცაცა", lastname: "ბახტაძე", death: '19??', profession: "ექიმი", image: "caca_bakhtadze.jpg" },
+		{ id: 4036, name: "მანუჟა", lastname: "ფირცხალავა" },
 
 
 
