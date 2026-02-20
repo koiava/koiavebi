@@ -543,7 +543,7 @@ const rawNodes = [
 		{ id: 4006, name: "ეფროსიმე", lastname: "კვირკველია", death: '1???' },
 		{ id: 4007, name: "ავქსენტი", death: '1932', fid: 4005, mid: 4006 },
 		{ id: 4008, name: "რომანოზი", death: '1962', fid: 4005, mid: 4006, profession: "ფინანსისტი" },
-		{ id: 4009, name: "მიხეილი", death: '19??', fid: 4005, mid: 4006 },
+		{ id: 4009, name: "მიხეილი", birth: 1896, death: '19??', fid: 4005, mid: 4006, profession: "ეკონომისტი" }, // https://umurgulia82.blogspot.com/2018/09/ix.html
 		{ id: 4011, name: "გიორგი(იობი)", birth: 1905, death: '1973', fid: 4005, mid: 4006, pid: 4035, profession: "ექიმი", image: "giorgi.jpg" },
 		{ id: 4012, name: "ევგენი", death: '19??', fid: 4005, mid: 4006 },
 		{ id: 4013, name: "ჟორა", death: '1???', fid: 4007, pid: 4036 },
@@ -570,6 +570,24 @@ const rawNodes = [
 		{ id: 4034, name: "ლიკა", lastname: "ჩილაჩავა", fid: 4026 },
 		{ id: 4035, name: "ცაცა", lastname: "ბახტაძე", death: '19??', profession: "ექიმი", image: "caca_bakhtadze.jpg" },
 		{ id: 4036, name: "მანუჟა", lastname: "ფირცხალავა" },
+
+
+
+		{ id: 4100, name: "სევერიანი" },
+		{ id: 4101, name: "ვაჟა", fid: 4100, pid: 4102 },
+		{ id: 4102, name: "ნორა" },
+		{ id: 4103, name: "ვალოდია", fid: 4100 },
+		{ id: 4104, name: "სოსო", birth: 1959, fid: 4101, mid: 4102, pid: 4107, fb: "soso.koiava.973726", profession: "დერმატოლოგი", image: "soso_2.jpg" },
+		{ id: 4105, name: "მანანა", birth: 1961, fid: 4101, mid: 4102, pid: 4108, fb: "manana.koiava.2025", image: "manana.jpg" },
+		{ id: 4106, name: "კახაბერი", fid: 4103, profession: "გეოლოგი/პროფესორი", image: "kakha_2.jpg" },
+		{ id: 4107, name: "ნინო", lastname: "ნადარეიშვილი", birth: 1980, image: "nino_nadareishvili.jpg" },
+		{ id: 4108, name: "---", lastname: "კალანდია" },
+		{ id: 4109, name: "სოფო", birth: 1993, fid: 4104, mid: 4107, image: "sopo.jpg" },
+		{ id: 4110, name: "გვანცა", fid: 4104, mid: 4107, image: "gvantsa.jpg" },
+		{ id: 4111, name: "ირაკლი", birth: 1990, fid: 4104, mid: 4107, fb: "ika.qoiava", image: "irakli_6.jpg" },
+		{ id: 4112, name: "მარიამი", lastname: "კალანდია", fid: 4108, mid: 4105, fb: "mariam.kalandia.12", image: "mariam_kalandia.jpg" },
+		{ id: 4113, name: "ნინი", lastname: "კალანდია", fid: 4108, mid: 4105, fb: "nini.kalandia.9", image: "nini_kalandia.jpg" },
+
 
 
 
