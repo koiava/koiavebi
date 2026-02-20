@@ -423,7 +423,8 @@ class TreeLayout {
 class TreeRenderer {
     constructor(canvasId, nodes) {
         this.canvas = document.getElementById(canvasId);
-        this.ctx = this.canvas.getContext('2d', { alpha: false }); 
+        // Removed { alpha: false } to prevent browsers from disabling sub-pixel text anti-aliasing
+        this.ctx = this.canvas.getContext('2d'); 
         this.layoutEngine = new TreeLayout(nodes);
         this.imageManager = new ImageManager();
         this.selectedNodeId = null; 
@@ -662,6 +663,11 @@ class TreeRenderer {
         this.canvas.style.width = window.innerWidth + 'px';
         this.canvas.style.height = window.innerHeight + 'px';
         this.ctx.scale(dpr, dpr);
+        
+        // Ensure smoothing is highly prioritized after a canvas resize
+        this.ctx.imageSmoothingEnabled = true;
+        this.ctx.imageSmoothingQuality = 'high';
+        
         this.requestRender();
     }
 
@@ -1005,8 +1011,8 @@ class TreeRenderer {
             lod = 0; // Force Fast Mode
         } else {
             // Normal LOD logic based on zoom
-            if (scale < 0.1) lod = 0; 
-            else if (scale < 0.3) lod = 1; 
+            if (scale < 0.05) lod = 0; 
+            else if (scale < 0.15) lod = 1; 
         }
 
         // Only use high res images if static and really close
@@ -1199,7 +1205,8 @@ class TreeRenderer {
             ctx.font = "24px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText(node.name.charAt(0), centerX, centerY);
+            // Use Math.round for text coordinates to avoid sub-pixel blurring
+            ctx.fillText(node.name.charAt(0), Math.round(centerX), Math.round(centerY));
         }
         ctx.restore();
 
@@ -1216,7 +1223,8 @@ class TreeRenderer {
         // Use precomputed names. If hovered, show the full name, otherwise use the fitted (truncated) one
         const nameText = (node === this.hoveredNode) ? node._fullName : node._fittedName;
 
-        ctx.fillText(nameText, textCenterX, textY);
+        // Use Math.round for text coordinates to avoid sub-pixel blurring
+        ctx.fillText(nameText, Math.round(textCenterX), Math.round(textY));
         
         // Facebook Icon
         if (node.fb) {
@@ -1233,7 +1241,8 @@ class TreeRenderer {
             // Use precomputed profession
             const profText = (node === this.hoveredNode) ? node.profession : node._fittedProf;
             
-            ctx.fillText(profText, textCenterX, textY);
+            // Use Math.round for text coordinates to avoid sub-pixel blurring
+            ctx.fillText(profText, Math.round(textCenterX), Math.round(textY));
             
             textY += 16;
         }
@@ -1246,12 +1255,12 @@ class TreeRenderer {
 
         if (node.birth) {
             ctx.textAlign = "left";
-            ctx.fillText(node.birth, x + padding, footerY);
+            ctx.fillText(node.birth, Math.round(x + padding), Math.round(footerY));
         }
 
         if (node.death) {
             ctx.textAlign = "right";
-            ctx.fillText(node.death, x + w - padding, footerY);
+            ctx.fillText(node.death, Math.round(x + w - padding), Math.round(footerY));
         }
     }
 
@@ -1468,7 +1477,7 @@ class TreeRenderer {
         
         // Use Precomputed Timeline Data
         this.timelineAverages.forEach((avg, yPos) => {
-             const screenY = (parseInt(yPos) * this.transform.k) + this.transform.y;
+             const screenY = Math.round((parseInt(yPos) * this.transform.k) + this.transform.y);
              if (screenY > 0 && screenY < h) {
                  ctx.fillText(avg, 20, screenY);
                  ctx.fillRect(10, screenY, 5, 1);
