@@ -577,16 +577,23 @@ const rawNodes = [
 		{ id: 4101, name: "ვაჟა", fid: 4100, pid: 4102 },
 		{ id: 4102, name: "ნორა" },
 		{ id: 4103, name: "ვალოდია", fid: 4100 },
-		{ id: 4104, name: "სოსო", birth: 1959, fid: 4101, mid: 4102, pid: 4107, fb: "soso.koiava.973726", profession: "დერმატოლოგი", image: "soso_2.jpg" },
+		{ id: 4104, name: "სოსო", birth: 1959, fid: 4101, mid: 4102, prevpids: [4115], pid: 4107, fb: "soso.koiava.973726", profession: "დერმატოლოგი", image: "soso_2.jpg" },
 		{ id: 4105, name: "მანანა", birth: 1961, fid: 4101, mid: 4102, pid: 4108, fb: "manana.koiava.2025", image: "manana.jpg" },
-		{ id: 4106, name: "კახაბერი", fid: 4103, profession: "გეოლოგი/პროფესორი", image: "kakha_2.jpg" },
+		{ id: 4106, name: "კახა", fid: 4103, pid: 4114, profession: "გეოლოგი/პროფესორი", image: "kakha_2.jpg" },
 		{ id: 4107, name: "ნინო", lastname: "ნადარეიშვილი", birth: 1980, image: "nino_nadareishvili.jpg" },
 		{ id: 4108, name: "---", lastname: "კალანდია" },
-		{ id: 4109, name: "სოფო", birth: 1993, fid: 4104, mid: 4107, fb: "soso.koiava.973726", image: "sopo.jpg" },
-		{ id: 4110, name: "გვანცა", fid: 4104, mid: 4107, fb: "gvantsa.qoiava", image: "gvantsa.jpg" },
-		{ id: 4111, name: "ირაკლი", birth: 1990, fid: 4104, mid: 4107, fb: "ika.qoiava", image: "irakli_6.jpg" },
+		{ id: 4109, name: "სოფო", birth: 1993, fid: 4106, mid: 4114, fb: "soso.koiava.973726", image: "sopo.jpg" },
+		{ id: 4110, name: "გვანცა", fid: 4106, mid: 4114, fb: "gvantsa.qoiava", image: "gvantsa.jpg" },
+		{ id: 4111, name: "ირაკლი", birth: 1990, fid: 4106, mid: 4114, fb: "ika.qoiava", image: "irakli_6.jpg" },
 		{ id: 4112, name: "მარიამი", lastname: "კალანდია", fid: 4108, mid: 4105, fb: "mariam.kalandia.12", image: "mariam_kalandia.jpg" },
 		{ id: 4113, name: "ნინი", lastname: "კალანდია", fid: 4108, mid: 4105, fb: "nini.kalandia.9", image: "nini_kalandia.jpg" },
+		{ id: 4114, name: "ქეთევანი", lastname: "კუჭავა" },
+		{ id: 4115, name: "-?-", lastname: "-?-" },
+		{ id: 4118, name: "ბიჭი1", fid: 4104, mid: 4107},
+		{ id: 4119, name: "დათა", fid: 4104, mid: 4107},
+		{ id: 4116, name: "გიორგი", fid: 4104, mid: 4115},
+		{ id: 4117, name: "სალომე", fid: 4104, mid: 4115},
+
 
 
 
