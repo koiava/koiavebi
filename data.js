@@ -572,14 +572,13 @@ const rawNodes = [
 		{ id: 4036, name: "მანუჟა", lastname: "ფირცხალავა" },
 
 
-
 		{ id: 4100, name: "სევერიანი" },
 		{ id: 4101, name: "ვაჟა", fid: 4100, pid: 4102 },
-		{ id: 4102, name: "ნორა" },
-		{ id: 4103, name: "ვალოდია", fid: 4100 },
+		{ id: 4102, name: "ნორა", lastname: "--" },
+		{ id: 4103, name: "ვალოდია", fid: 4100, pid: 4118, profession: "გეოლოგი/ლექტორი", },
 		{ id: 4104, name: "სოსო", birth: 1959, fid: 4101, mid: 4102, prevpids: [4115], pid: 4107, fb: "soso.koiava.973726", profession: "დერმატოლოგი", image: "soso_2.jpg" },
 		{ id: 4105, name: "მანანა", birth: 1961, fid: 4101, mid: 4102, pid: 4108, fb: "manana.koiava.2025", image: "manana.jpg" },
-		{ id: 4106, name: "კახა", fid: 4103, pid: 4114, profession: "გეოლოგი/პროფესორი", image: "kakha_2.jpg" },
+		{ id: 4106, name: "კახა", fid: 4103, mid: 4118, pid: 4114, profession: "გეოლოგი/პროფესორი", image: "kakha_2.jpg" },
 		{ id: 4107, name: "ნინო", lastname: "ნადარეიშვილი", birth: 1980, image: "nino_nadareishvili.jpg" },
 		{ id: 4108, name: "---", lastname: "კალანდია" },
 		{ id: 4109, name: "სოფო", birth: 1993, fid: 4106, mid: 4114, fb: "soso.koiava.973726", image: "sopo.jpg" },
@@ -587,23 +586,20 @@ const rawNodes = [
 		{ id: 4111, name: "ირაკლი", birth: 1990, fid: 4106, mid: 4114, fb: "ika.qoiava", image: "irakli_6.jpg" },
 		{ id: 4112, name: "მარიამი", lastname: "კალანდია", fid: 4108, mid: 4105, fb: "mariam.kalandia.12", image: "mariam_kalandia.jpg" },
 		{ id: 4113, name: "ნინი", lastname: "კალანდია", fid: 4108, mid: 4105, fb: "nini.kalandia.9", image: "nini_kalandia.jpg" },
-		{ id: 4114, name: "ქეთევანი", lastname: "კუჭავა" },
+		{ id: 4114, name: "ქეთევანი", lastname: "კუჭავა", fb: "keti.kuchava", image: "ketevan_kuchava.jpg" },
 		{ id: 4115, name: "-?-", lastname: "-?-" },
-		{ id: 4118, name: "ბიჭი1", fid: 4104, mid: 4107},
+		{ id: 4118, name: "სოსო", fid: 4104, mid: 4107},
 		{ id: 4119, name: "დათა", fid: 4104, mid: 4107},
 		{ id: 4116, name: "გიორგი", fid: 4104, mid: 4115},
 		{ id: 4117, name: "სალომე", fid: 4104, mid: 4115},
-
-
-
-
+		{ id: 4118, name: "ლილი", lastname: "ცოფურაშვილი"},
 
 		
 		{ id: 500, name: "დანიელი(თემურაზი)", death: '1???' },
 		{ id: 501, name: "მიხეილი", death: '1???', fid: 500 },
         { id: 502, name: "რომანი", pid: 519, fid: 501 },
 		{ id: 503, name: "ზურაბი", birth: 1958, pid: 518, fid: 502, mid: 519, image: "zurabi_2.jpg" },
-		{ id: 504, name: "ზაზა", fb: "zaza.koiava", birth: 1983, pid: 506, fid: 503, mid: 518, image: "zaza.jpg" },
+		{ id: 504, name: "ზაზა", birth: 1983, pid: 506, fid: 503, mid: 518, fb: "zaza.koiava", profession: "ფსიქოლოგი", image: "zaza.jpg" },
 		{ id: 505, name: "ნათია", fb: "natia.koiava.9", pid: 509, fid: 503, mid: 518, image: "natia_2.jpg" },
 		{ id: 506, name: "თამარ", lastname: "ჯოლოხავა", image: "tamar_jolokhava.jpg" },
 		{ id: 507, name: "თეკლა", mid: 506, fid: 504, image: "tekla.jpg" },
