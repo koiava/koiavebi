@@ -7,7 +7,7 @@ const CONFIG = {
     horizontalSpacing: 30, 
     
     // Dynamic Vertical Spacing Configuration
-    verticalSpacingBase: 230, 
+    verticalSpacingBase: 290, // Increased to guarantee enough space for U-curves near leaves
     verticalSpacingFactor: 200, 
     
     partnerSpacing: 40,   
@@ -411,7 +411,14 @@ class TreeLayout {
             minX = Math.min(minX, n.x - CONFIG.cardWidth/2);
             maxX = Math.max(maxX, n.x + CONFIG.cardWidth/2);
             minY = Math.min(minY, n.y);
-            maxY = Math.max(maxY, n.y + CONFIG.cardHeight);
+            
+            // Add extra space to the bottom bound to prevent U-curves from being cut off
+            let extraBottom = 0;
+            if (n.partners && n.partners.length > 0) {
+                // 25 (base drop) + index * 20 (partner step) + 15 (radius padding)
+                extraBottom = 25 + ((n.partners.length - 1) * 20) + 15; 
+            }
+            maxY = Math.max(maxY, n.y + CONFIG.cardHeight + extraBottom);
         });
         return { minX, maxX, minY, maxY, width: maxX-minX, height: maxY-minY };
     }
