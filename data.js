@@ -275,7 +275,7 @@ const rawNodes = [
 		{ id: 357, name: "თამაზი", fid: 335, mid: 441, birth: 1948, death: '1992', pid: 423, image: "tamazi_2.jpg" },
 		{ id: 358, name: "ეთერი", fid: 338, mid: 460 },
 		{ id: 359, name: "ციალა", fid: 338, mid: 460 },
-		{ id: 360, name: "კლიმენტი", death: '????', fid: 323, mid: 454, pid: 444 },
+		{ id: 360, name: "კლიმენტი", death: '????', fid: 323, mid: 454, pid: 444, image: "klimenti.jpg" },
 		{ id: 361, name: "ჯონდო", death: 1940, pid: 453, fid: 323, mid: 454 }, // 1940 წლის 14 აპრილის კომუნისტი - https://dspace.nplg.gov.ge/bitstream/1234/345604/1/Komunisti_1940_N86.pdf
 		{ id: 362, name: "მიშა", death: '1963', fid: 323, mid: 454, pid: 433, profession: "ბიზნესმენი", image: "mikhail.jpg" },
 		{ id: 363, name: "ცირუ", fid: 323, mid: 454 },
@@ -358,7 +358,7 @@ const rawNodes = [
 		{ id: 441, name: "ლიდა", lastname: "-???-", death: '19??'},
 		{ id: 442, name: "ეთერი", lastname: "-???-", death: '19??'},
 		{ id: 443, name: "ლაურა", lastname: "კახიძე", birth: 1935, profession: "ინჟინერ-ფეიქარი", image: "laura_kakhidze.jpg" },
-		{ id: 444, name: "ალექსანდრა", lastname: "დუნდუა", death: '19??' },
+		{ id: 444, name: "ალექსანდრა", lastname: "დუნდუა", death: '19??', image: "aleksandra_dundua.jpg" },
 		{ id: 445, name: "ლუდმილა", death: '19??' },
 		{ id: 446, name: "ლიანა", lastname: "კახიძე", birth: 1936, death: 2023, image: "liana_kakhidze.jpg" },
 		{ id: 447, name: "კატია", lastname: "ოგონიოკი", birth: 1977, death: 2007, profession: "მომღერალი", image: "katya_ogonek.jpg" },
