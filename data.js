@@ -432,7 +432,7 @@ const rawNodes = [
 		{ id: 1053, name: "იროდი", birth: 1914, death: '1983', pid: 1095, fid: 1029 },
 		{ id: 1054, name: "???", lastname: "სალაყაია", death: '19??' },
 		{ id: 1055, name: "ვლადიმერ/ხუტა", fid: 1030 },
-		{ id: 1056, name: "ვარლამი", fid: 1036 },
+		{ id: 1056, name: "ვარლამი", fid: 1036, birth: 1913, death: 1984 },
 		{ id: 1057, name: "ნიკოლოზი", fid: 1036 },
 		{ id: 1058, name: "რაული", fid: 1044 },
 		{ id: 1059, name: "მარინა", fid: 1045 },
